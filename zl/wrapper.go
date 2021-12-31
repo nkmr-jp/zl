@@ -1,5 +1,4 @@
-// Created from https://github.com/nkmr-jp/go-logger-scaffold
-package logger
+package zl
 
 import (
 	"fmt"
@@ -9,8 +8,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/davecgh/go-spew/spew"
-	"github.com/k0kubun/pp"
 	"go.uber.org/zap"
 )
 
@@ -167,31 +164,4 @@ func checkInit() {
 	if zapLogger == nil {
 		log.Fatal("The logger is not initialized. InitLogger() must be called.")
 	}
-}
-
-// Print is Wrapper of pp.Print()
-func Print(i interface{}) (n int, err error) {
-	if !checkLevel("DEBUG") {
-		return
-	}
-	wrapper("pp.Print (console only)", "DEBUG", []zap.Field{})
-	return pp.Print(i)
-}
-
-// Println is Wrapper of pp.Println()
-func Println(i interface{}) (n int, err error) {
-	if !checkLevel("DEBUG") {
-		return
-	}
-	wrapper("pp.Println (console only)", "DEBUG", []zap.Field{})
-	return pp.Println(i)
-}
-
-// Dump is Wrapper of spew.Dump()
-func Dump(i interface{}) {
-	if !checkLevel("DEBUG") {
-		return
-	}
-	wrapper("spew.Dump (console only)", "DEBUG", []zap.Field{})
-	spew.Dump(i)
 }
