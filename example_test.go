@@ -2,21 +2,19 @@ package lightning_test
 
 import (
 	"fmt"
-	"github.com/nkmr-jp/zap-lightning/zl"
+	"os"
 	"time"
+
+	"github.com/nkmr-jp/zap-lightning/zl"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-// set values from cli.
-// ex.`go run -ldflags "-X main.version=v1.0.0 -X main.srcRootDir=$PWD" main.go`
-
-// version git revision or tag. set from go cli.
-var version string
-
-// srcRootDir set from cli.
-var srcRootDir string
+var (
+	version    string // version git revision or tag. set from go cli.
+	srcRootDir string // srcRootDir set from cli.
+)
 
 const (
 	consoleField = "console"
@@ -25,8 +23,13 @@ const (
 )
 
 func Example() {
+	// If you use this, you might actually want to pass the value from the go command, like this
+	// ex.`go run -ldflags "-X main.version=v1.0.0 -X main.srcRootDir=$PWD" main.go`
+	version = "v0.1.1"
+	srcRootDir, _ = os.Getwd()
+
 	// Set options
-	zl.SetLogFile("./log/app_%Y-%m-%d.log")
+	zl.SetLogFile("./log/app_%Y-%m-%d.jsonl")
 	zl.SetVersion(version)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetConsoleField(consoleField, traceIDField)
@@ -40,10 +43,7 @@ func Example() {
 
 	// basic
 	zl.Info("USER_INFO", zap.String("name", "Alice"), zap.Int("age", 20))
-	// error log
-	err := fmt.Errorf("error message")
-	zl.Errorf("SOME_ERROR", err)
-	// debug log
+	zl.Errorf("SOME_ERROR", fmt.Errorf("error message"))
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Warn("WARN_MESSAGE")
 	// display to console log
