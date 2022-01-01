@@ -1,4 +1,4 @@
-module nkmr-jp/zap-lightning
+module github.com/nkmr-jp/zap-lightning
 
 go 1.16
 
