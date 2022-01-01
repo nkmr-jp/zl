@@ -2,7 +2,7 @@ package lightning_test
 
 import (
 	"fmt"
-	"nkmr-jp/zap-lightning/zl"
+	"github.com/nkmr-jp/zap-lightning/zl"
 	"time"
 
 	"go.uber.org/zap"
