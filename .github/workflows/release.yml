@@ -1,0 +1,39 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install jq yq
+        run: |
+          sudo wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /usr/bin/jq &&\
+          sudo chmod +x /usr/bin/jq
+          sudo pip install yq
+          jq --version
+          yq --version
+      - name: Install gitmoji-semver
+        run: |
+          git clone https://github.com/nkmr-jp/gitmoji-semver -b v2.0.0
+      - name: Generate semantic-release configs
+        working-directory: ./gitmoji-semver
+        run: |
+          make scaffold F=../.semver.yml O=..
+      - name: Release
+        working-directory: ./.release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install
+          npx semantic-release
