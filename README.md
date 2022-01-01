@@ -3,26 +3,6 @@
 - Zap Lightning is a lightweight wrapper for [Zap](https://github.com/uber-go/zap) (Zap is Blazing fast, structured, leveled logging in Go).
 - Zap Lightning is created based on [go-logger-scaffold](https://github.com/nkmr-jp/go-logger-scaffold).
 
-## Features
-- Json structured log to log file.
-- Simple log to console.
-- Stack trace.
-- Log file rotation.
-- Save Code Version and Host to log file.
-- Save Caller URL to log file.
-- Setup context logger.
-- etc...
-
-## Install
-
-```sh
-go get -u github.com/nkmr-jp/zap-lightning/zl
-```
-
-## Usage
-
-See: [example_test.go](example_test.go)
-
 ## How to work
 
 ```sh
@@ -50,3 +30,23 @@ cat log/app_2022-01-01.jsonl
 {"level":"ERROR","ts":"2022-01-01T16:29:17.36734+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L72","function":"github.com/nkmr-jp/zap-lightning_test.ExampleNewWrapper","msg":"CONTEXT_SCOPE_ERROR","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","error":"context scope error message","user_id":1,"trace_id":1641022157367216000,"stacktrace":"github.com/nkmr-jp/zap-lightning_test.ExampleNewWrapper\n\t/Users/nkmr/ghq/github.com/nkmr-jp/zap-lightning/example_test.go:72\ntesting.runExample\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/run_example.go:64\ntesting.runExamples\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/example.go:44\ntesting.(*M).Run\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/testing.go:1505\nmain.main\n\t_testmain.go:45\nruntime.main\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/runtime/proc.go:255"}
 {"level":"INFO","ts":"2022-01-01T16:29:17.367387+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/zl/wrapper.go#L76","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","msg":"FLUSH_LOG_BUFFER","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
 ```
+
+## Install
+
+```sh
+go get -u github.com/nkmr-jp/zap-lightning/zl
+```
+
+## Usage
+
+See: [example_test.go](example_test.go)
+
+## Features
+- Json structured log to log file.
+- Simple log to console.
+- Stack trace.
+- Log file rotation.
+- Save Code Version and Host to log file.
+- Save Caller URL to log file.
+- Setup context logger.
+- etc...
