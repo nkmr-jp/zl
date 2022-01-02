@@ -29,7 +29,7 @@ func Example() {
 	srcRootDir, _ = os.Getwd()
 
 	// Set options
-	zl.SetLogFile("./log/app_%Y-%m-%d.jsonl")
+	zl.SetLogFile("./log/app.jsonl")
 	zl.SetVersion(version)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetConsoleField(consoleField, traceIDField)

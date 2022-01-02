@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"go.uber.org/zap/zapcore"
 )
@@ -111,15 +110,17 @@ func SetConsoleField(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 
+// Log File Options
+
 // SetLogFile set log file path ex. "./log/app_%Y-%m-%d.log"
 func SetLogFile(file string) {
-	logFile = file
+	fileName = file
 }
 
-func SetRotationTime(duration time.Duration) {
-	rotationTime = duration
-}
-
-func SetPurgeTime(duration time.Duration) {
-	purgeTime = duration
-}
+// func SetRotationTime(duration time.Duration) {
+// 	rotationTime = duration
+// }
+//
+// func SetPurgeTime(duration time.Duration) {
+// 	purgeTime = duration
+// }

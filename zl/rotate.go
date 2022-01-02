@@ -2,46 +2,42 @@ package zl
 
 import (
 	"log"
-	"time"
 
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// See: https://github.com/natefinch/lumberjack
 const (
-	logFileDefault      = "./log/app_%Y-%m-%d.log"
-	rotationTimeDefault = 24 * time.Hour
-	purgeTimeDefault    = 7 * 24 * time.Hour
+	fileNameDefault   = "./log/app.jsonl"
+	maxSizeDefault    = 100 // megabytes
+	maxBackupsDefault = 3
+	maxAgeDefault     = 7 // days
 )
 
 var (
-	logFile      string
-	rotationTime time.Duration
-	purgeTime    time.Duration
+	fileName string
 )
 
-// See https://github.com/lestrrat-go/file-rotatelogs
-func newRotateLogs() *rotatelogs.RotateLogs {
+// See:
+// https://github.com/natefinch/lumberjack
+// https://github.com/uber-go/zap/blob/master/FAQ.md#does-zap-support-log-rotation
+func newLumberjack() *lumberjack.Logger {
 	setRotateDefault()
-	res, err := rotatelogs.New(
-		logFile,
-		rotatelogs.WithRotationTime(rotationTime),
-		rotatelogs.WithMaxAge(purgeTime),
-	)
-	if err != nil {
-		log.Fatal(err)
+	res := &lumberjack.Logger{
+		Filename:   fileName,
+		MaxSize:    maxSizeDefault,
+		MaxBackups: maxBackupsDefault,
+		MaxAge:     maxAgeDefault,
 	}
-	log.Printf("log file path: %v", logFile)
+	log.Printf("log file path: %v", fileName)
 	return res
 }
 
 func setRotateDefault() {
-	if logFile == "" {
-		logFile = logFileDefault
+	if fileName == "" {
+		fileName = fileNameDefault
 	}
-	if rotationTime == 0 {
-		rotationTime = rotationTimeDefault
-	}
-	if purgeTime == 0 {
-		purgeTime = purgeTimeDefault
-	}
+	// if rotationTime == 0 {
+	// 	rotationTime = rotationTimeDefault
+	// }
 }

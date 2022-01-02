@@ -91,9 +91,9 @@ func getCallerEncoder() zapcore.CallerEncoder {
 func getSyncers() (syncers []zapcore.WriteSyncer) {
 	switch outputType {
 	case OutputTypeShortConsoleAndFile, OutputTypeFile:
-		syncers = append(syncers, zapcore.AddSync(newRotateLogs()))
+		syncers = append(syncers, zapcore.AddSync(newLumberjack()))
 	case OutputTypeConsoleAndFile:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newRotateLogs()))
+		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newLumberjack()))
 	case OutputTypeConsole:
 		syncers = append(syncers, zapcore.AddSync(os.Stdout))
 	}

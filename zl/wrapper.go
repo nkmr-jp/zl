@@ -72,10 +72,11 @@ func (w *Wrapper) Fatalf(msg string, err error, fields ...zap.Field) {
 }
 
 // Sync wrapper of Zap's Sync.
+// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
 func Sync() {
 	Info("FLUSH_LOG_BUFFER")
 	if err := zapLogger.Sync(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
