@@ -1,17 +1,18 @@
 # Zap Lightning
 
-Zap Lightning is a lightweight wrapper for [zap](https://github.com/uber-go/zap) (zap is Blazing fast, structured, leveled logging in Go).
+Zap Lightning is a lightweight wrapper for [zap](https://github.com/uber-go/zap).<br>
+It provides presets for easy implementation of advanced logging features.
 
-## How to work
+## How it works
 
 ```sh
 go test -v
 ```
 
-### Console
+### Simple log to console
 ![img1.png](img1.png)
 
-### Log file
+### Json structured log to file
 
 ```shell
 cat log/app_2022-01-01.jsonl
@@ -41,11 +42,11 @@ go get -u github.com/nkmr-jp/zap-lightning/zl
 See: [example_test.go](example_test.go)
 
 ## Features
-- Json structured log to log file.
+- Json structured log to file.
 - Simple log to console.
-- Stack trace.
+- Stack trace when error.
 - Log file rotation.
-- Save Code Version and Host to log file.
-- Save Caller URL to log file.
-- Context logger.
+- Write Code Version and Host to log.
+- Write Caller URL to log.
+- Context logging.
 - etc...
