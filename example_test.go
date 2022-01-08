@@ -17,9 +17,7 @@ var (
 )
 
 const (
-	consoleField = "console"
-	traceIDField = "trace_id"
-	urlFormat    = "https://github.com/nkmr-jp/zap-lightning/blob/%s"
+	urlFormat = "https://github.com/nkmr-jp/zap-lightning/blob/%s"
 )
 
 func Example() {
@@ -32,7 +30,6 @@ func Example() {
 	zl.SetLogFile("./log/app.jsonl")
 	zl.SetVersion(version)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
-	zl.SetConsoleField(consoleField, traceIDField)
 	zl.SetLogLevel(zapcore.DebugLevel)
 	zl.SetOutputType(zl.OutputTypeShortConsoleAndFile)
 
@@ -44,27 +41,30 @@ func Example() {
 	// basic
 	zl.Info("USER_INFO", zap.String("name", "Alice"), zap.Int("age", 20))
 	err := fmt.Errorf("error message")
-	zl.Error("SOME_ERROR2", err) // it must error message if higher than error level.
+	zl.Error("ERROR_MESSAGE", err) // error level log must with error message.
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Warn("WARN_MESSAGE")
-	// display to console log
-	zl.Info("DISPLAY_TO_CONSOLE", zap.String(consoleField, "display to console"))
+	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // warn level log with error message.
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console"))
 	// Output:
 }
 
-func ExampleNewLogger() {
+func ExampleNew() {
 	// Initialize
+	traceIDField := "trace_id"
+	zl.AddConsoleField(traceIDField)
 	zl.Init()
 	defer zl.Sync()
 	zl.SyncWhenStop()
 
-	// NewLogger
+	// New
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-	w := zl.NewLogger(
+	w := zl.New(
 		zap.Int("user_id", 1),
 		zap.Int64(traceIDField, time.Now().UnixNano()),
 	)
-	w.Info("CONTEXT_SCOPE_INFO")
-	w.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	err := fmt.Errorf("context scope error message")
+	w.Info("CONTEXT_SCOPE_INFO", zl.Consolef("hoge %s", err.Error()))
+	w.Error("CONTEXT_SCOPE_ERROR", err)
 	// Output:
 }

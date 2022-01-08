@@ -11,6 +11,10 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const (
+	consoleFieldDefault = "console"
+)
+
 var (
 	once          sync.Once
 	zapLogger     *zap.Logger
@@ -19,7 +23,7 @@ var (
 	version       string
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
-	consoleFields []string
+	consoleFields = []string{consoleFieldDefault}
 )
 
 // Initialize the Logger.

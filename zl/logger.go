@@ -15,9 +15,9 @@ type Logger struct {
 	Fields []zap.Field
 }
 
-// NewLogger can additional default fields.
+// New can additional default fields.
 // ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-func NewLogger(fields ...zap.Field) *Logger {
+func New(fields ...zap.Field) *Logger {
 	return &Logger{Fields: fields}
 }
 

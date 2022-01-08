@@ -72,13 +72,13 @@ func checkLevel(levelStr string) bool {
 func getConsoleMsg(fields []zap.Field) string {
 	var ret string
 	var consoles []string
-	for _, v := range fields {
-		if funk.ContainsString(consoleFields, v.Key) {
+	for i := range fields {
+		if funk.ContainsString(consoleFields, fields[i].Key) {
 			var val string
-			if v.String != "" {
-				val = v.String
+			if fields[i].String != "" {
+				val = fields[i].String
 			} else {
-				val = strconv.Itoa(int(v.Integer))
+				val = strconv.Itoa(int(fields[i].Integer))
 			}
 			// consoles = append(consoles, fmt.Sprintf("%s=%s", v.Key, val))
 			consoles = append(consoles, val)
