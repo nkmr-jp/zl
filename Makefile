@@ -25,6 +25,6 @@ pr:
 	-git co -b $(B)
 	@echo
 	@echo "${GREEN}# CREATE PULL REQUEST ${RESET}"
-	git commit --allow-empty -m ":tada: The first commit in issue #$(I)"
+	git commit --allow-empty -m ":tada: The first commit in #$(B)"
 	gh pr create -a @me -t "[PR] $(T)" -B develop
 	gh pr view --web
