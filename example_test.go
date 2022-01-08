@@ -37,7 +37,7 @@ func Example() {
 	zl.SetOutputType(zl.OutputTypeShortConsoleAndFile)
 
 	// Initialize
-	zl.InitLogger()
+	zl.Init()
 	defer zl.Sync()   // flush log buffer
 	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
@@ -52,15 +52,15 @@ func Example() {
 	// Output:
 }
 
-func ExampleNewWrapper() {
+func ExampleNewLogger() {
 	// Initialize
-	zl.InitLogger()
+	zl.Init()
 	defer zl.Sync()
 	zl.SyncWhenStop()
 
-	// NewWrapper
+	// NewLogger
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-	w := zl.NewWrapper(
+	w := zl.NewLogger(
 		zap.Int("user_id", 1),
 		zap.Int64(traceIDField, time.Now().UnixNano()),
 	)
