@@ -43,7 +43,8 @@ func Example() {
 
 	// basic
 	zl.Info("USER_INFO", zap.String("name", "Alice"), zap.Int("age", 20))
-	zl.Errorf("SOME_ERROR", fmt.Errorf("error message"))
+	err := fmt.Errorf("error message")
+	zl.Error("SOME_ERROR2", err) // it must error message if higher than error level.
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Warn("WARN_MESSAGE")
 	// display to console log
@@ -64,6 +65,6 @@ func ExampleNewWrapper() {
 		zap.Int64(traceIDField, time.Now().UnixNano()),
 	)
 	w.Info("CONTEXT_SCOPE_INFO")
-	w.Errorf("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	w.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
 	// Output:
 }

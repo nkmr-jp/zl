@@ -36,39 +36,29 @@ func (w *Wrapper) Warn(msg string, fields ...zap.Field) {
 	wrapper(msg, "WARN", fields).Warn(msg, fields...)
 }
 
-func (w *Wrapper) Error(msg string, fields ...zap.Field) {
-	fields = append(fields, w.Fields...)
-	wrapper(msg, "ERROR", fields).Error(msg, fields...)
+func (w *Wrapper) Error(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	wrapperErr(msg, "ERROR", err, fields).Error(msg, fields...)
 }
 
-func (w *Wrapper) Fatal(msg string, fields ...zap.Field) {
-	fields = append(fields, w.Fields...)
-	wrapper(msg, "FATAL", fields).Fatal(msg, fields...)
+func (w *Wrapper) Fatal(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	wrapperErr(msg, "FATAL", err, fields).Fatal(msg, fields...)
 }
 
-func (w *Wrapper) Debugf(msg string, err error, fields ...zap.Field) {
-	fields = append(addErrorField(fields, err), w.Fields...)
-	wrapperf(msg, "DEBUG", err, fields).Debug(msg, fields...)
+func (w *Wrapper) DebugErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	wrapperErr(msg, "DEBUG", err, fields).Debug(msg, fields...)
 }
 
-func (w *Wrapper) Infof(msg string, err error, fields ...zap.Field) {
-	fields = append(addErrorField(fields, err), w.Fields...)
-	wrapperf(msg, "INFO", err, fields).Info(msg, fields...)
+func (w *Wrapper) InfoErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	wrapperErr(msg, "INFO", err, fields).Info(msg, fields...)
 }
 
-func (w *Wrapper) Warnf(msg string, err error, fields ...zap.Field) {
-	fields = append(addErrorField(fields, err), w.Fields...)
-	wrapperf(msg, "WARN", err, fields).Warn(msg, fields...)
-}
-
-func (w *Wrapper) Errorf(msg string, err error, fields ...zap.Field) {
-	fields = append(addErrorField(fields, err), w.Fields...)
-	wrapperf(msg, "ERROR", err, fields).Error(msg, fields...)
-}
-
-func (w *Wrapper) Fatalf(msg string, err error, fields ...zap.Field) {
-	fields = append(addErrorField(fields, err), w.Fields...)
-	wrapperf(msg, "FATAL", err, fields).Fatal(msg, fields...)
+func (w *Wrapper) WarnErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	wrapperErr(msg, "WARN", err, fields).Warn(msg, fields...)
 }
 
 // Sync wrapper of Zap's Sync.
@@ -116,33 +106,28 @@ func Warn(msg string, fields ...zap.Field) {
 	wrapper(msg, "WARN", fields).Warn(msg, fields...)
 }
 
-func Error(msg string, fields ...zap.Field) {
-	wrapper(msg, "ERROR", fields).Error(msg, fields...)
+func Error(msg string, err error, fields ...zap.Field) {
+	wrapperErr(msg, "ERROR", err, fields).Error(msg, append(fields, zap.Error(err))...)
 }
 
-func Fatal(msg string, fields ...zap.Field) {
-	wrapper(msg, "FATAL", fields).Fatal(msg, fields...)
+func Fatal(msg string, err error, fields ...zap.Field) {
+	wrapperErr(msg, "FATAL", err, fields).Fatal(msg, append(fields, zap.Error(err))...)
 }
 
-// Debugf is Outputs a Debug log with formatted error.
-func Debugf(msg string, err error, fields ...zap.Field) {
-	wrapperf(msg, "DEBUG", err, fields).Debug(msg, addErrorField(fields, err)...)
+// DebugErr is Outputs a Debug log with error field.
+func DebugErr(msg string, err error, fields ...zap.Field) {
+	wrapperErr(msg, "DEBUG", err, fields).Debug(msg, append(fields, zap.Error(err))...)
 }
 
-func Infof(msg string, err error, fields ...zap.Field) {
-	wrapperf(msg, "INFO", err, fields).Info(msg, addErrorField(fields, err)...)
+// InfoErr is Outputs a Info log with error field.
+func InfoErr(msg string, err error, fields ...zap.Field) {
+	err.Error()
+	wrapperErr(msg, "INFO", err, fields).Info(msg, append(fields, zap.Error(err))...)
 }
 
-func Warnf(msg string, err error, fields ...zap.Field) {
-	wrapperf(msg, "WARN", err, fields).Warn(msg, addErrorField(fields, err)...)
-}
-
-func Errorf(msg string, err error, fields ...zap.Field) {
-	wrapperf(msg, "ERROR", err, fields).Error(msg, addErrorField(fields, err)...)
-}
-
-func Fatalf(msg string, err error, fields ...zap.Field) {
-	wrapperf(msg, "FATAL", err, fields).Fatal(msg, addErrorField(fields, err)...)
+// WarnErr is Outputs a Warn log with error field.
+func WarnErr(msg string, err error, fields ...zap.Field) {
+	wrapperErr(msg, "WARN", err, fields).Warn(msg, append(fields, zap.Error(err))...)
 }
 
 func wrapper(msg, level string, fields []zap.Field) *zap.Logger {
@@ -151,14 +136,10 @@ func wrapper(msg, level string, fields []zap.Field) *zap.Logger {
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
 }
 
-func wrapperf(msg, level string, err error, fields []zap.Field) *zap.Logger {
+func wrapperErr(msg, level string, err error, fields []zap.Field) *zap.Logger {
 	checkInit()
 	shortLogWithError(msg, level, err, fields)
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
-}
-
-func addErrorField(fields []zap.Field, err error) []zap.Field {
-	return append(fields, zap.String("error", fmt.Sprintf("%+v", err)))
 }
 
 func checkInit() {
