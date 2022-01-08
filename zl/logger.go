@@ -1,101 +1,149 @@
 package zl
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"os/exec"
+	"os/signal"
 	"strings"
-	"sync"
+	"syscall"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-var (
-	once          sync.Once
-	zapLogger     *zap.Logger
-	consoleType   ConsoleType
-	outputType    OutputType
-	version       string
-	logLevel      zapcore.Level // Default is InfoLevel
-	callerEncoder zapcore.CallerEncoder
-	consoleFields []string
-)
-
-// Initialize the Logger.
-// Outputs short logs to the console and Write structured and detailed json logs to the log file.
-func InitLogger() *zap.Logger {
-	once.Do(func() {
-		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-		initZapLogger()
-		Info("INIT_LOGGER")
-	})
-	return zapLogger
+type Logger struct {
+	Fields []zap.Field
 }
 
-// See https://pkg.go.dev/go.uber.org/zap
-func initZapLogger() {
-	log.Printf("log level: %v", logLevel.CapitalString())
-	log.Printf("output type: %v", outputType.String())
-	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "ts",
-		LevelKey:       "level",
-		NameKey:        "name",
-		CallerKey:      "caller",
-		MessageKey:     "msg",
-		StacktraceKey:  "stacktrace",
-		FunctionKey:    "function",
-		EncodeLevel:    zapcore.CapitalLevelEncoder,
-		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
-		EncodeDuration: zapcore.StringDurationEncoder,
-		EncodeCaller:   getCallerEncoder(),
-	}
-	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),
-		zapcore.NewMultiWriteSyncer(getSyncers()...),
-		logLevel,
-	)
-	zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
-		zap.String("version", getVersion()),
-		zap.String("hostname", *getHost()),
-	)
+// New can additional default fields.
+// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
+func New(fields ...zap.Field) *Logger {
+	return &Logger{Fields: fields}
 }
 
-func getVersion() string {
-	if version != "" {
-		return version
-	}
-	if out, err := exec.Command("git", "rev-parse", "--short", "HEAD").Output(); err == nil {
-		return strings.TrimRight(string(out), "\n")
-	}
-
-	return "undefined"
+func (w *Logger) Debug(msg string, fields ...zap.Field) {
+	fields = append(fields, w.Fields...)
+	logger(msg, "DEBUG", fields).Debug(msg, fields...)
 }
 
-func getHost() *string {
-	ret, err := os.Hostname()
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
-	return &ret
+func (w *Logger) Info(msg string, fields ...zap.Field) {
+	fields = append(fields, w.Fields...)
+	logger(msg, "INFO", fields).Info(msg, fields...)
 }
 
-func getCallerEncoder() zapcore.CallerEncoder {
-	if callerEncoder != nil {
-		return callerEncoder
-	}
-	return zapcore.ShortCallerEncoder
+func (w *Logger) Warn(msg string, fields ...zap.Field) {
+	fields = append(fields, w.Fields...)
+	logger(msg, "WARN", fields).Warn(msg, fields...)
 }
 
-func getSyncers() (syncers []zapcore.WriteSyncer) {
-	switch outputType {
-	case OutputTypeShortConsoleAndFile, OutputTypeFile:
-		syncers = append(syncers, zapcore.AddSync(newLumberjack()))
-	case OutputTypeConsoleAndFile:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newLumberjack()))
-	case OutputTypeConsole:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout))
+func (w *Logger) Error(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	loggerErr(msg, "ERROR", err, fields).Error(msg, fields...)
+}
+
+func (w *Logger) Fatal(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	loggerErr(msg, "FATAL", err, fields).Fatal(msg, fields...)
+}
+
+func (w *Logger) DebugErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	loggerErr(msg, "DEBUG", err, fields).Debug(msg, fields...)
+}
+
+func (w *Logger) InfoErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	loggerErr(msg, "INFO", err, fields).Info(msg, fields...)
+}
+
+func (w *Logger) WarnErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), w.Fields...)
+	loggerErr(msg, "WARN", err, fields).Warn(msg, fields...)
+}
+
+// Sync logger of Zap's Sync.
+// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
+func Sync() {
+	Info("FLUSH_LOG_BUFFER")
+	if err := zapLogger.Sync(); err != nil {
+		log.Println(err)
 	}
-	return
+}
+
+// SyncWhenStop flush log buffer. when interrupt or terminated.
+func SyncWhenStop() {
+	c := make(chan os.Signal, 1)
+
+	go func() {
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		s := <-c
+
+		sigCode := 0
+		switch s.String() {
+		case "interrupt":
+			sigCode = 2
+		case "terminated":
+			sigCode = 15
+		}
+
+		Info(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		Sync() // flush log buffer
+		os.Exit(128 + sigCode)
+	}()
+}
+
+// Debug is Logger of Zap's Debug.
+// Outputs a short log to the console. Detailed json log output to log file.
+func Debug(msg string, fields ...zap.Field) {
+	logger(msg, "DEBUG", fields).Debug(msg, fields...)
+}
+
+func Info(msg string, fields ...zap.Field) {
+	logger(msg, "INFO", fields).Info(msg, fields...)
+}
+
+func Warn(msg string, fields ...zap.Field) {
+	logger(msg, "WARN", fields).Warn(msg, fields...)
+}
+
+func Error(msg string, err error, fields ...zap.Field) {
+	loggerErr(msg, "ERROR", err, fields).Error(msg, append(fields, zap.Error(err))...)
+}
+
+func Fatal(msg string, err error, fields ...zap.Field) {
+	loggerErr(msg, "FATAL", err, fields).Fatal(msg, append(fields, zap.Error(err))...)
+}
+
+// DebugErr is Outputs a Debug log with error field.
+func DebugErr(msg string, err error, fields ...zap.Field) {
+	loggerErr(msg, "DEBUG", err, fields).Debug(msg, append(fields, zap.Error(err))...)
+}
+
+// InfoErr is Outputs a Info log with error field.
+func InfoErr(msg string, err error, fields ...zap.Field) {
+	err.Error()
+	loggerErr(msg, "INFO", err, fields).Info(msg, append(fields, zap.Error(err))...)
+}
+
+// WarnErr is Outputs a Warn log with error field.
+func WarnErr(msg string, err error, fields ...zap.Field) {
+	loggerErr(msg, "WARN", err, fields).Warn(msg, append(fields, zap.Error(err))...)
+}
+
+func logger(msg, level string, fields []zap.Field) *zap.Logger {
+	checkInit()
+	shortLog(msg, level, fields)
+	return zapLogger.WithOptions(zap.AddCallerSkip(1))
+}
+
+func loggerErr(msg, level string, err error, fields []zap.Field) *zap.Logger {
+	checkInit()
+	shortLogWithError(msg, level, err, fields)
+	return zapLogger.WithOptions(zap.AddCallerSkip(1))
+}
+
+func checkInit() {
+	if zapLogger == nil {
+		log.Fatal("The logger is not initialized. Init() must be called.")
+	}
 }

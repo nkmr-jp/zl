@@ -105,8 +105,8 @@ func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
 
-// SetConsoleField Set the fields to be displayed in the console.
-func SetConsoleField(fieldKey ...string) {
+// AddConsoleField Set the fields to be displayed in the console.
+func AddConsoleField(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 

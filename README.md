@@ -1,3 +1,5 @@
+Refactoring for the release of v1.0
+
 # Zap Lightning
 
 Zap Lightning is a lightweight wrapper for [zap](https://github.com/uber-go/zap).<br>
@@ -35,6 +37,11 @@ cat log/app_2022-01-01.jsonl
 
 ```sh
 go get -u github.com/nkmr-jp/zap-lightning/zl
+```
+
+```sh
+# If you want to use the latest feature.
+go get -u github.com/nkmr-jp/zap-lightning/zl@develop
 ```
 
 ## Usage
