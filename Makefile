@@ -12,7 +12,7 @@ WHITE        := $(shell tput -Txterm setaf 7)
 RESET := $(shell tput -Txterm sgr0)
 
 B=feature
-T=B
+T=$(B)
 pr:
 	@echo
 	@echo "${GREEN}# DELETE MERGED BRANCH ${RESET}"
@@ -25,6 +25,6 @@ pr:
 	-git co -b $(B)
 	@echo
 	@echo "${GREEN}# CREATE PULL REQUEST ${RESET}"
-	git commit --allow-empty -m ":tada: The first commit in #$(B)"
+	git commit --allow-empty -m ":tada: The first commit in $(B)"
 	gh pr create -a @me -t "[PR] $(T)" -B develop
 	gh pr view --web
