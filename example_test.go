@@ -65,7 +65,18 @@ func ExampleSetOutputType() {
 	zl.SetLogLevel(zapcore.DebugLevel) // Default is InfoLevel
 	zl.SetOutputType(zl.OutputTypeConsole)
 
+	// Initialize
+	zl.Init()
+	defer zl.Sync()   // flush log buffer
+	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+
+	// Logs
+	zl.Info("USER_INFO", zl.Console("message"))
+
 	// Output:
+	// {"level":"INFO","ts":"2022-01-14T06:43:03.345143+09:00","caller":"zl/zl.go:36","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","msg":"INIT_LOGGER","version":"dd90b59","hostname":"nkmrnoMacBook-Pro.local","console":"logLevel: DEBUG, fileName: , outputType: Console"}
+	// {"level":"INFO","ts":"2022-01-14T06:43:03.345329+09:00","recaller":"zap-lightning/example_test.go:74","function":"github.com/nkmr-jp/zap-lightning_test.ExampleSetOutputType","msg":"USER_INFO","version":"dd90b59","hostname":"nkmrnoMacBook-Pro.local","console":"message"}
+	// {"level":"INFO","ts":"2022-01-14T06:43:03.345341+09:00","caller":"zl/logger.go:67","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","msg":"FLUSH_LOG_BUFFER","version":"dd90b59","hostname":"nkmrnoMacBook-Pro.local"}
 }
 
 func ExampleNew() {
