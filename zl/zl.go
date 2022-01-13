@@ -1,6 +1,7 @@
 package zl
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -32,15 +33,18 @@ func Init() *zap.Logger {
 	once.Do(func() {
 		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		initZapLogger()
-		Info("INIT_LOGGER")
+		Info("INIT_LOGGER", Console(fmt.Sprintf(
+			"logLevel: %s, fileName: %s, outputType: %s",
+			logLevel.CapitalString(),
+			fileName,
+			outputType.String(),
+		)))
 	})
 	return zapLogger
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
 func initZapLogger() {
-	log.Printf("log level: %v", logLevel.CapitalString())
-	log.Printf("output type: %v", outputType.String())
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "ts",
 		LevelKey:       "level",
@@ -60,12 +64,13 @@ func initZapLogger() {
 		logLevel,
 	)
 	zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
-		zap.String("version", getVersion()),
+		zap.String("version", GetVersion()),
 		zap.String("hostname", *getHost()),
 	)
 }
 
-func getVersion() string {
+// GetVersion return version, when version is set. or return git commit hash, when version is not set.
+func GetVersion() string {
 	if version != "" {
 		return version
 	}
@@ -95,9 +100,9 @@ func getCallerEncoder() zapcore.CallerEncoder {
 func getSyncers() (syncers []zapcore.WriteSyncer) {
 	switch outputType {
 	case OutputTypeShortConsoleAndFile, OutputTypeFile:
-		syncers = append(syncers, zapcore.AddSync(newLumberjack()))
+		syncers = append(syncers, zapcore.AddSync(newRotator()))
 	case OutputTypeConsoleAndFile:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newLumberjack()))
+		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newRotator()))
 	case OutputTypeConsole:
 		syncers = append(syncers, zapcore.AddSync(os.Stdout))
 	}

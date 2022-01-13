@@ -81,8 +81,7 @@ func SetLogLevelByString(levelStr string) {
 	SetLogLevel(level)
 }
 
-// SetRepositoryCallerEncoder
-// build and set CallerEncoder that build a link to the Repository of the caller's source code.
+// SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.
 func SetRepositoryCallerEncoder(urlFormat, revisionOrTag, srcRootDir string) {
 	if revisionOrTag == "" || srcRootDir == "" {
 		return
@@ -105,22 +104,36 @@ func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
 
-// AddConsoleField Set the fields to be displayed in the console.
+// AddConsoleField Add the fields to be displayed in the console.
 func AddConsoleField(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 
-// Log File Options
+//
+// Log File Rotation Settings
+// See: https://github.com/natefinch/lumberjack#type-logger
+//
 
-// SetLogFile set log file path ex. "./log/app_%Y-%m-%d.log"
-func SetLogFile(file string) {
-	fileName = file
+func SetFileName(val string) {
+	fileName = val
 }
 
-// func SetRotationTime(duration time.Duration) {
-// 	rotationTime = duration
-// }
-//
-// func SetPurgeTime(duration time.Duration) {
-// 	purgeTime = duration
-// }
+func SetMaxSize(val int) {
+	maxSize = val
+}
+
+func SetMaxBackups(val int) {
+	maxBackups = val
+}
+
+func SetMaxAge(val int) {
+	maxAge = val
+}
+
+func SetLocalTime(val bool) {
+	localTime = val
+}
+
+func SetCompress(val bool) {
+	compress = val
+}
