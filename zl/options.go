@@ -136,6 +136,11 @@ func SetIgnoreKeys(key ...Key) {
 	ignoreKeys = key
 }
 
+// SetStdout is changes the console log output from stderr to stdout.
+func SetStdout() {
+	isStdOut = true
+}
+
 //
 // Log File Rotation Settings
 // See: https://github.com/natefinch/lumberjack#type-logger

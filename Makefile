@@ -30,5 +30,11 @@ pr:
 	gh pr view --web
 
 doc:
-	@echo "open in web browser http://localhost:6060"
+	@echo
+	@echo "Open in web browser"
+	@echo "http://localhost:6060/pkg/github.com/nkmr-jp/zap-lightning/zl/"
+	@echo
 	@godoc -http=:6060
+
+test:
+	go test ./... -v

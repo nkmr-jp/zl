@@ -3,6 +3,7 @@ package zl
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -29,6 +30,7 @@ var (
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
 	ignoreKeys    []Key
+	isStdOut      bool
 )
 
 // Init initializes the logger.
@@ -39,8 +41,11 @@ func Init() *zap.Logger {
 		} else {
 			log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		}
+		if isStdOut {
+			log.SetOutput(os.Stdout)
+		}
 		initZapLogger()
-		Info("INIT_LOGGER", Console(fmt.Sprintf(
+		Debug("INIT_LOGGER", Console(fmt.Sprintf(
 			"Level: %s, Output: %s, FileName: %s",
 			logLevel.CapitalString(),
 			outputType.String(),
@@ -124,7 +129,11 @@ func GetVersion() string {
 // Sync logger of Zap's Sync.
 // Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
 func Sync() {
-	Info("FLUSH_LOG_BUFFER")
+	if outputType != PrettyOutput && outputType != FileOutput {
+		return
+	}
+
+	Debug("FLUSH_LOG_BUFFER")
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
@@ -132,6 +141,10 @@ func Sync() {
 
 // SyncWhenStop flush log buffer. when interrupt or terminated.
 func SyncWhenStop() {
+	if outputType != PrettyOutput && outputType != FileOutput {
+		return
+	}
+
 	c := make(chan os.Signal, 1)
 
 	go func() {
@@ -146,7 +159,7 @@ func SyncWhenStop() {
 			sigCode = 15
 		}
 
-		Info(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		Debug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
 		Sync() // flush log buffer
 		os.Exit(128 + sigCode)
 	}()
@@ -173,9 +186,17 @@ func getSyncers() (syncers []zapcore.WriteSyncer) {
 	case PrettyOutput, FileOutput:
 		syncers = append(syncers, zapcore.AddSync(newRotator()))
 	case ConsoleAndFileOutput:
-		syncers = append(syncers, zapcore.AddSync(os.Stderr), zapcore.AddSync(newRotator()))
+		syncers = append(syncers, zapcore.AddSync(getConsoleOutput()), zapcore.AddSync(newRotator()))
 	case ConsoleOutput:
-		syncers = append(syncers, zapcore.AddSync(os.Stderr))
+		syncers = append(syncers, zapcore.AddSync(getConsoleOutput()))
 	}
 	return
+}
+
+func getConsoleOutput() io.Writer {
+	if isStdOut {
+		return os.Stdout
+	} else {
+		return os.Stderr
+	}
 }
