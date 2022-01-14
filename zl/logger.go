@@ -1,12 +1,7 @@
 package zl
 
 import (
-	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
 
 	"go.uber.org/zap"
 )
@@ -15,7 +10,7 @@ type Logger struct {
 	Fields []zap.Field
 }
 
-// New can additional default fields.
+// New can add additional default fields.
 // ex. Use this when you want to add a common value in the scope of a context, such as an API request.
 func New(fields ...zap.Field) *Logger {
 	return &Logger{Fields: fields}
@@ -59,37 +54,6 @@ func (w *Logger) InfoErr(msg string, err error, fields ...zap.Field) {
 func (w *Logger) WarnErr(msg string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), w.Fields...)
 	loggerErr(msg, "WARN", err, fields).Warn(msg, fields...)
-}
-
-// Sync logger of Zap's Sync.
-// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
-func Sync() {
-	Info("FLUSH_LOG_BUFFER")
-	if err := zapLogger.Sync(); err != nil {
-		log.Println(err)
-	}
-}
-
-// SyncWhenStop flush log buffer. when interrupt or terminated.
-func SyncWhenStop() {
-	c := make(chan os.Signal, 1)
-
-	go func() {
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-		s := <-c
-
-		sigCode := 0
-		switch s.String() {
-		case "interrupt":
-			sigCode = 2
-		case "terminated":
-			sigCode = 15
-		}
-
-		Info(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
-		Sync() // flush log buffer
-		os.Exit(128 + sigCode)
-	}()
 }
 
 // Debug is Logger of Zap's Debug.

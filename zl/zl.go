@@ -1,3 +1,4 @@
+// Package zl provides zap based advanced logging features, and it's easy to use.
 package zl
 
 import (
@@ -5,8 +6,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -19,7 +22,7 @@ const (
 var (
 	once          sync.Once
 	zapLogger     *zap.Logger
-	outputType    OutputType
+	outputType    Output
 	version       string
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
@@ -80,6 +83,37 @@ func GetVersion() string {
 	return "undefined"
 }
 
+// Sync logger of Zap's Sync.
+// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
+func Sync() {
+	Info("FLUSH_LOG_BUFFER")
+	if err := zapLogger.Sync(); err != nil {
+		log.Println(err)
+	}
+}
+
+// SyncWhenStop flush log buffer. when interrupt or terminated.
+func SyncWhenStop() {
+	c := make(chan os.Signal, 1)
+
+	go func() {
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		s := <-c
+
+		sigCode := 0
+		switch s.String() {
+		case "interrupt":
+			sigCode = 2
+		case "terminated":
+			sigCode = 15
+		}
+
+		Info(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		Sync() // flush log buffer
+		os.Exit(128 + sigCode)
+	}()
+}
+
 func getHost() *string {
 	ret, err := os.Hostname()
 	if err != nil {
@@ -98,11 +132,11 @@ func getCallerEncoder() zapcore.CallerEncoder {
 
 func getSyncers() (syncers []zapcore.WriteSyncer) {
 	switch outputType {
-	case OutputTypePretty, OutputTypeFile:
+	case PrettyOutput, FileOutput:
 		syncers = append(syncers, zapcore.AddSync(newRotator()))
-	case OutputTypeConsoleAndFile:
+	case ConsoleAndFileOutput:
 		syncers = append(syncers, zapcore.AddSync(os.Stderr), zapcore.AddSync(newRotator()))
-	case OutputTypeConsole:
+	case ConsoleOutput:
 		syncers = append(syncers, zapcore.AddSync(os.Stderr))
 	}
 	return

@@ -8,53 +8,53 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type OutputType int
+type Output int
 
 const (
-	// OutputTypePretty writes the colored simple log to console,
+	// PrettyOutput writes the colored simple log to console,
 	// and writes json structured detail log to file.
 	// it is Default setting.
 	// Recommended for Develop Environment.
-	OutputTypePretty OutputType = iota
+	PrettyOutput Output = iota
 
-	// OutputTypeConsoleAndFile writes json structured log to console and file.
+	// ConsoleAndFileOutput writes json structured log to console and file.
 	// Recommended for Develop Environment.
-	OutputTypeConsoleAndFile
+	ConsoleAndFileOutput
 
-	// OutputTypeConsole writes json structured log to console.
+	// ConsoleOutput writes json structured log to console.
 	// Recommended for Develop and Production Environment.
-	OutputTypeConsole
+	ConsoleOutput
 
-	// OutputTypeFile writes json structured log to file.
+	// FileOutput writes json structured log to file.
 	// Recommended for Develop and Production Environment.
-	OutputTypeFile
+	FileOutput
 )
 
-var outputTypeStrings = [4]string{
+var outputStrings = [4]string{
 	"Pretty",
 	"ConsoleAndFile",
 	"Console",
 	"File",
 }
 
-func (o OutputType) String() string {
-	return outputTypeStrings[o]
+func (o Output) String() string {
+	return outputStrings[o]
 }
 
-func SetOutputType(option OutputType) {
+func SetOutput(option Output) {
 	outputType = option
 }
 
-// SetOutputTypeByString outputTypeStr can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File).
+// SetOutputTypeByString can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File).
 func SetOutputTypeByString(outputTypeStr string) {
-	var output OutputType
+	var output Output
 	if outputTypeStr == "" {
-		SetOutputType(output)
+		SetOutput(output)
 		return
 	}
-	for i, i2 := range outputTypeStrings {
+	for i, i2 := range outputStrings {
 		if outputTypeStr == i2 {
-			SetOutputType(OutputType(i))
+			SetOutput(Output(i))
 			return
 		}
 	}
@@ -64,7 +64,7 @@ func SetOutputTypeByString(outputTypeStr string) {
 	)
 }
 
-func SetLogLevel(option zapcore.Level) {
+func SetLevel(option zapcore.Level) {
 	logLevel = option
 }
 
@@ -75,7 +75,7 @@ func SetLogLevelByString(levelStr string) {
 	if err != nil {
 		log.Fatalf("%s is invalid level. can use (DEBUG,INFO,WARN,ERROR,FATAL)", levelStr)
 	}
-	SetLogLevel(level)
+	SetLevel(level)
 }
 
 // SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.

@@ -13,7 +13,7 @@ import (
 )
 
 func prettyLog(msg, levelStr string, fields []zap.Field) {
-	if outputType != OutputTypePretty {
+	if outputType != PrettyOutput {
 		return
 	}
 	if !checkLevel(levelStr) {
@@ -35,7 +35,7 @@ func prettyLog(msg, levelStr string, fields []zap.Field) {
 }
 
 func prettyLogWithError(msg string, levelStr string, err error, fields []zap.Field) {
-	if outputType != OutputTypePretty {
+	if outputType != PrettyOutput {
 		return
 	}
 	if !checkLevel(levelStr) {

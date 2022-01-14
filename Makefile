@@ -28,3 +28,7 @@ pr:
 	git commit --allow-empty -m ":tada: The first commit in $(B)"
 	gh pr create -a @me -t "[PR] $(T)" -B develop
 	gh pr view --web
+
+doc:
+	@echo "open in web browser http://localhost:6060"
+	@godoc -http=:6060
