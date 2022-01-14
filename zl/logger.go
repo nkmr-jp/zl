@@ -132,13 +132,13 @@ func WarnErr(msg string, err error, fields ...zap.Field) {
 
 func logger(msg, level string, fields []zap.Field) *zap.Logger {
 	checkInit()
-	shortLog(msg, level, fields)
+	prettyLog(msg, level, fields)
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
 }
 
 func loggerErr(msg, level string, err error, fields []zap.Field) *zap.Logger {
 	checkInit()
-	shortLogWithError(msg, level, err, fields)
+	prettyLogWithError(msg, level, err, fields)
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
 }
 

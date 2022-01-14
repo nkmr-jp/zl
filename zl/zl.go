@@ -26,8 +26,7 @@ var (
 	consoleFields = []string{consoleFieldDefault}
 )
 
-// Initialize the Logger.
-// Outputs short logs to the console and Write structured and detailed json logs to the log file.
+// Init initializes the logger.
 func Init() *zap.Logger {
 	once.Do(func() {
 		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
@@ -45,13 +44,13 @@ func Init() *zap.Logger {
 // See https://pkg.go.dev/go.uber.org/zap
 func initZapLogger() {
 	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "ts",
+		MessageKey:     "message",
 		LevelKey:       "level",
+		TimeKey:        "time",
 		NameKey:        "name",
 		CallerKey:      "caller",
-		MessageKey:     "msg",
-		StacktraceKey:  "stacktrace",
 		FunctionKey:    "function",
+		StacktraceKey:  "stacktrace",
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
@@ -68,7 +67,8 @@ func initZapLogger() {
 	)
 }
 
-// GetVersion return version, when version is set. or return git commit hash, when version is not set.
+// GetVersion return version when version is set.
+// or return git commit hash when version is not set.
 func GetVersion() string {
 	if version != "" {
 		return version
