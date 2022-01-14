@@ -8,18 +8,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type ConsoleType int
-
-const (
-	ConsoleTypeAll ConsoleType = iota
-	ConsoleTypeError
-	ConsoleTypeNone
-)
-
-func SetConsoleType(option ConsoleType) {
-	consoleType = option
-}
-
 type OutputType int
 
 const (
@@ -43,7 +31,7 @@ const (
 )
 
 var outputTypeStrings = [4]string{
-	"ShortConsoleAndFile",
+	"Pretty",
 	"ConsoleAndFile",
 	"Console",
 	"File",

@@ -19,7 +19,6 @@ const (
 var (
 	once          sync.Once
 	zapLogger     *zap.Logger
-	consoleType   ConsoleType
 	outputType    OutputType
 	version       string
 	logLevel      zapcore.Level // Default is InfoLevel
