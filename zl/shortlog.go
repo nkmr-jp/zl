@@ -17,7 +17,7 @@ func shortLog(msg, levelStr string, fields []zap.Field) {
 	if consoleType != ConsoleTypeAll {
 		return
 	}
-	if outputType != OutputTypeShortConsoleAndFile {
+	if outputType != OutputTypePretty {
 		return
 	}
 	if !checkLevel(levelStr) {
@@ -43,7 +43,7 @@ func shortLogWithError(msg string, levelStr string, err error, fields []zap.Fiel
 	if consoleType == ConsoleTypeNone {
 		return
 	}
-	if outputType != OutputTypeShortConsoleAndFile {
+	if outputType != OutputTypePretty {
 		return
 	}
 	if !checkLevel(levelStr) {

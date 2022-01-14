@@ -23,13 +23,22 @@ func SetConsoleType(option ConsoleType) {
 type OutputType int
 
 const (
-	// OutputTypeShortConsoleAndFile output simple console log and detail file log (default)
-	OutputTypeShortConsoleAndFile OutputType = iota
-	// OutputTypeConsoleAndFile output detail console log and file log
+	// OutputTypePretty writes the colored simple log to console,
+	// and writes json structured detail log to file.
+	// it is Default setting.
+	// Recommended for Develop Environment.
+	OutputTypePretty OutputType = iota
+
+	// OutputTypeConsoleAndFile writes json structured log to console and file.
+	// Recommended for Develop Environment.
 	OutputTypeConsoleAndFile
-	// OutputTypeConsole output detail console log
+
+	// OutputTypeConsole writes json structured log to console.
+	// Recommended for Develop and Production Environment.
 	OutputTypeConsole
-	// OutputTypeFile output detail file log
+
+	// OutputTypeFile writes json structured log to file.
+	// Recommended for Develop and Production Environment.
 	OutputTypeFile
 )
 

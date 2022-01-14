@@ -1,4 +1,4 @@
-package lightning_test
+package zl_test
 
 import (
 	"fmt"
