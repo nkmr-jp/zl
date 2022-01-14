@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	fileNameDefault   = "./log/app.jsonl"
-	maxSizeDefault    = 100 // megabytes
-	maxBackupsDefault = 3
-	maxAgeDefault     = 7 // days
+	FileNameDefault   = "./log/app.jsonl"
+	MaxSizeDefault    = 100 // megabytes
+	MaxBackupsDefault = 3
+	MaxAgeDefault     = 7 // days
 )
 
 var (
@@ -38,15 +38,15 @@ func newRotator() *lumberjack.Logger {
 
 func setRotateDefault() {
 	if fileName == "" {
-		fileName = fileNameDefault
+		fileName = FileNameDefault
 	}
 	if maxSize == 0 {
-		maxSize = maxSizeDefault
+		maxSize = MaxSizeDefault
 	}
 	if maxBackups == 0 {
-		maxBackups = maxBackupsDefault
+		maxBackups = MaxBackupsDefault
 	}
 	if maxAge == 0 {
-		maxAge = maxAgeDefault
+		maxAge = MaxAgeDefault
 	}
 }

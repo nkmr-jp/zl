@@ -120,8 +120,7 @@ func buildRepositoryCallerEncoder(dir, url string) zapcore.CallerEncoder {
 	}
 }
 
-// SetVersion set version.
-// note: `revisionOrTag` should be a git revision or a tag. ex. `e86b9a7` or `v1.0.0`.
+// SetVersion `revisionOrTag` should be a git revision or a tag. ex. `e86b9a7` or `v1.0.0`.
 func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
@@ -141,31 +140,38 @@ func SetStdout() {
 	isStdOut = true
 }
 
-//
-// Log File Rotation Settings
+// SetFileName set the file to write logs to.
 // See: https://github.com/natefinch/lumberjack#type-logger
-//
-
 func SetFileName(val string) {
 	fileName = val
 }
 
+// SetMaxSize set the maximum size in megabytes of the log file before it gets rotated.
+// See: https://github.com/natefinch/lumberjack#type-logger
 func SetMaxSize(val int) {
 	maxSize = val
 }
 
-func SetMaxBackups(val int) {
-	maxBackups = val
-}
-
+// SetMaxAge set the maximum number of days to retain.
+// See: https://github.com/natefinch/lumberjack#type-logger
 func SetMaxAge(val int) {
 	maxAge = val
 }
 
+// SetMaxBackups set the maximum number of old log files to retain.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetMaxBackups(val int) {
+	maxBackups = val
+}
+
+// SetLocalTime determines if the time used for formatting the timestamps in backup files is the computer's local time.
+// See: https://github.com/natefinch/lumberjack#type-logger
 func SetLocalTime(val bool) {
 	localTime = val
 }
 
+// SetCompress determines if the rotated log files should be compressed using gzip.
+// See: https://github.com/natefinch/lumberjack#type-logger
 func SetCompress(val bool) {
 	compress = val
 }

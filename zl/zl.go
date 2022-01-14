@@ -36,14 +36,7 @@ var (
 // Init initializes the logger.
 func Init() *zap.Logger {
 	once.Do(func() {
-		if funk.Contains(ignoreKeys, TimeKey) {
-			log.SetFlags(log.Lshortfile)
-		} else {
-			log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-		}
-		if isStdOut {
-			log.SetOutput(os.Stdout)
-		}
+		setLog()
 		initZapLogger()
 		Debug("INIT_LOGGER", Console(fmt.Sprintf(
 			"Level: %s, Output: %s, FileName: %s",
@@ -53,6 +46,17 @@ func Init() *zap.Logger {
 		)))
 	})
 	return zapLogger
+}
+
+func setLog() {
+	if funk.Contains(ignoreKeys, TimeKey) {
+		log.SetFlags(log.Lshortfile)
+	} else {
+		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	}
+	if isStdOut {
+		log.SetOutput(os.Stdout)
+	}
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
@@ -199,4 +203,17 @@ func getConsoleOutput() io.Writer {
 	} else {
 		return os.Stderr
 	}
+}
+
+// Cleanup removes logger and resets settings. This is mainly used for testing etc.
+func Cleanup() {
+	once = sync.Once{}
+	zapLogger = nil
+	outputType = PrettyOutput
+	version = ""
+	logLevel = zapcore.InfoLevel
+	callerEncoder = nil
+	consoleFields = []string{consoleFieldDefault}
+	ignoreKeys = nil
+	isStdOut = false
 }

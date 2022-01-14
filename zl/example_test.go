@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/nkmr-jp/zap-lightning/zl"
 	"go.uber.org/zap"
@@ -43,30 +42,32 @@ func Example() {
 	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console when output type is pretty"))
 
-	app, _ := os.ReadFile("./log/app.jsonl")
-	fmt.Println(string(app))
+	bytes, _ := os.ReadFile("./log/app.jsonl")
+	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:48: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl
-	// example_test.go:38: INFO USER_INFO
-	// example_test.go:40: ERROR ERROR_MESSAGE: error message
-	// example_test.go:41: DEBUG DEBUG_MESSAGE
-	// example_test.go:42: WARN WARN_MESSAGE
-	// example_test.go:43: WARN WARN_MESSAGE_WITH_ERROR: error message
-	// example_test.go:44: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
-	// zl.go:136: DEBUG FLUSH_LOG_BUFFER
+	// zl.go:41: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl
+	// example_test.go:37: INFO USER_INFO
+	// example_test.go:39: ERROR ERROR_MESSAGE: error message
+	// example_test.go:40: DEBUG DEBUG_MESSAGE
+	// example_test.go:41: WARN WARN_MESSAGE
+	// example_test.go:42: WARN WARN_MESSAGE_WITH_ERROR: error message
+	// example_test.go:43: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
+	// zl.go:140: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","caller":"zl/zl.go:48","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
-	// {"level":"INFO","caller":"zl/example_test.go:38","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","caller":"zl/example_test.go:40","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","caller":"zl/zl.go:41","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
+	// {"level":"INFO","caller":"zl/example_test.go:37","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"level":"DEBUG","caller":"zl/example_test.go:40","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
+	// {"level":"WARN","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"level":"WARN","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"level":"INFO","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
 }
 
 func ExampleSetVersion() {
+	zl.Cleanup() // removes logger and resets settings.
+
 	urlFormat := "https://github.com/nkmr-jp/zap-lightning/blob/%s"
 
 	// Actually, it is recommended to pass the value from the command line of go.
@@ -87,17 +88,21 @@ func ExampleSetVersion() {
 	defer zl.Sync()   // flush log buffer
 	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
-	// Logs
+	// Write logs
 	zl.Warn("WARN_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
 
 	// Output:
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L91","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L92","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
+	zl.Cleanup() // removes logger and resets settings.
+
 	// Set options
 	traceIDField := "trace_id"
 	zl.AddConsoleFields(traceIDField)
+	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetOutput(zl.PrettyOutput)
 
 	// Initialize
 	zl.Init()
@@ -106,13 +111,20 @@ func ExampleNew() {
 
 	// New
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-	w := zl.New(
-		zap.Int("user_id", 1),
-		zap.Int64(traceIDField, time.Now().UnixNano()),
-	)
-	err := fmt.Errorf("context scope error message")
-	w.Info("CONTEXT_SCOPE_INFO", zl.Consolef("hoge %s", err.Error()))
-	w.Error("CONTEXT_SCOPE_ERROR", err)
+	w := zl.New(zap.Int("user_id", 1), zap.Int64(traceIDField, 1642153670000264000))
+
+	// Write logs
+	w.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
+	w.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+
+	bytes, _ := os.ReadFile("./log/app.jsonl")
+	fmt.Println(string(bytes))
+
+	// Output to stderr with colored:
+	// example_test.go:117: INFO CONTEXT_SCOPE_INFO: some message to console: test, 1642153670000264000
+	// example_test.go:118: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
 
 	// Output:
+	// {"level":"INFO","caller":"zl/example_test.go:117","message":"CONTEXT_SCOPE_INFO","version":"a9e7986","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"ERROR","caller":"zl/example_test.go:118","message":"CONTEXT_SCOPE_ERROR","version":"a9e7986","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
 }
