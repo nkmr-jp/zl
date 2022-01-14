@@ -9,7 +9,6 @@ import (
 
 	"github.com/nkmr-jp/zap-lightning/zl"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -26,8 +25,8 @@ func TestMain(m *testing.M) {
 
 func Example() {
 	// Set Options
-	zl.SetLevel(zapcore.DebugLevel) // Default is InfoLevel
-	zl.SetOutput(zl.PrettyOutput)   // Default. it's recommended for develop environment.
+	zl.SetLevel(zl.DebugLevel)    // Default is InfoLevel
+	zl.SetOutput(zl.PrettyOutput) // Default. it's recommended for develop environment.
 
 	// Initialize
 	zl.Init()
@@ -77,7 +76,7 @@ func ExampleSetVersion() {
 	srcRootDir, _ = os.Getwd()
 
 	// Set Options
-	zl.SetLevel(zapcore.DebugLevel) // Default is InfoLevel
+	zl.SetLevel(zl.DebugLevel) // Default is InfoLevel
 	zl.SetVersion(version)
 	zl.SetFileName(fmt.Sprintf("./log/app_%s.jsonl", zl.GetVersion()))
 	zl.SetRepositoryCallerEncoder(
@@ -97,7 +96,7 @@ func ExampleSetVersion() {
 
 func ExampleSetOutput() {
 	// Set options
-	zl.SetLevel(zapcore.DebugLevel) // Default is InfoLevel
+	zl.SetLevel(zl.DebugLevel) // Default is InfoLevel
 	zl.SetOutput(zl.ConsoleOutput)
 
 	// Initialize

@@ -35,10 +35,10 @@ func Init() *zap.Logger {
 		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		initZapLogger()
 		Info("INIT_LOGGER", Console(fmt.Sprintf(
-			"logLevel: %s, fileName: %s, outputType: %s",
+			"Level: %s, Output: %s, FileName: %s, ",
 			logLevel.CapitalString(),
-			fileName,
 			outputType.String(),
+			fileName,
 		)))
 	})
 	return zapLogger

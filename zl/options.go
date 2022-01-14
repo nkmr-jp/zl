@@ -8,6 +8,16 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+type Level int8
+
+const (
+	DebugLevel = Level(zapcore.DebugLevel)
+	InfoLevel  = Level(zapcore.InfoLevel)
+	WarnLevel  = Level(zapcore.WarnLevel)
+	ErrorLevel = Level(zapcore.ErrorLevel)
+	FatalLevel = Level(zapcore.FatalLevel)
+)
+
 type Output int
 
 const (
@@ -64,8 +74,8 @@ func SetOutputTypeByString(outputTypeStr string) {
 	)
 }
 
-func SetLevel(option zapcore.Level) {
-	logLevel = option
+func SetLevel(option Level) {
+	logLevel = zapcore.Level(option)
 }
 
 // SetLogLevelByString is set log level. levelStr can use (DEBUG,INFO,WARN,ERROR,FATAL).
@@ -75,7 +85,7 @@ func SetLogLevelByString(levelStr string) {
 	if err != nil {
 		log.Fatalf("%s is invalid level. can use (DEBUG,INFO,WARN,ERROR,FATAL)", levelStr)
 	}
-	SetLevel(level)
+	SetLevel(Level(level))
 }
 
 // SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.
