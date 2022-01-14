@@ -25,8 +25,9 @@ func TestMain(m *testing.M) {
 
 func Example() {
 	// Set Options
-	zl.SetLevel(zl.DebugLevel)    // Default is InfoLevel
-	zl.SetOutput(zl.PrettyOutput) // Default. it's recommended for develop environment.
+	zl.SetLevel(zl.DebugLevel)                                     // default is InfoLevel.
+	zl.SetOutput(zl.PrettyOutput)                                  // PrettyOutput is default. recommended for develop environment.
+	zl.SetIgnoreKeys(zl.TimeKey, zl.HostnameKey, zl.StacktraceKey) // ignore fields for test.
 
 	// Initialize
 	zl.Init()
@@ -47,27 +48,17 @@ func Example() {
 	app, _ := os.ReadFile("./log/app.jsonl")
 	fmt.Println(string(app))
 
-	// Example output:
-	// Colored Simple Log
-	//
-	// 2022/01/14 12:01:52 zl.go:37: INFO INIT_LOGGER: logLevel: DEBUG, fileName: ./log/app.jsonl, outputType: Pretty
-	// 2022/01/14 12:01:52 example_test.go:28: INFO USER_INFO
-	// 2022/01/14 12:01:52 example_test.go:30: ERROR ERROR_MESSAGE: error message
-	// 2022/01/14 12:01:52 example_test.go:31: DEBUG DEBUG_MESSAGE
-	// 2022/01/14 12:01:52 example_test.go:32: WARN WARN_MESSAGE
-	// 2022/01/14 12:01:52 example_test.go:33: WARN WARN_MESSAGE_WITH_ERROR: error message
-	// 2022/01/14 12:01:52 example_test.go:34: INFO DISPLAY_TO_CONSOLE: display to console
-	// 2022/01/14 12:01:52 zl.go:89: INFO FLUSH_LOG_BUFFER
-	//
-	// {"level":"INFO","time":"2022-01-14T12:16:03.274814+09:00","caller":"zl/zl.go:37","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local","console":"logLevel: DEBUG, fileName: ./log/app.jsonl, outputType: Pretty"}
-	// {"level":"INFO","time":"2022-01-14T12:16:03.27503+09:00","caller":"zl/example_test.go:28","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local","name":"Alice","age":20}
-	// {"level":"ERROR","time":"2022-01-14T12:16:03.275073+09:00","caller":"zl/example_test.go:30","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local","error":"error message","stacktrace":"github.com/nkmr-jp/zap-lightning/zl_test.Example\n\t/Users/nkmr/ghq/github.com/nkmr-jp/zap-lightning/zl/example_test.go:30\ntesting.runExample\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/run_example.go:64\ntesting.runExamples\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/example.go:44\ntesting.(*M).Run\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/testing.go:1505\nmain.main\n\t_testmain.go:49\nruntime.main\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/runtime/proc.go:255"}
-	// {"level":"DEBUG","time":"2022-01-14T12:16:03.275159+09:00","caller":"zl/example_test.go:31","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local"}
-	// {"level":"WARN","time":"2022-01-14T12:16:03.275186+09:00","caller":"zl/example_test.go:32","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local"}
-	// {"level":"WARN","time":"2022-01-14T12:16:03.275208+09:00","caller":"zl/example_test.go:33","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local","error":"error message"}
-	// {"level":"INFO","time":"2022-01-14T12:16:03.275233+09:00","caller":"zl/example_test.go:34","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","version":"f0ebbca","hostname":"nkmrnoMacBook-Pro.local","console":"display to console"}
-
 	// Output:
+	// Console:
+	//
+	// File:
+	// {"level":"INFO","caller":"zl/zl.go:39","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","version":"7301145","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
+	// {"level":"INFO","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","version":"7301145","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","version":"7301145","error":"error message"}
+	// {"level":"DEBUG","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE","version":"7301145"}
+	// {"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","version":"7301145","error":"error message"}
+	// {"level":"WARN","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","version":"7301145","error":"error message"}
+	// {"level":"INFO","caller":"zl/example_test.go:45","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","version":"7301145","console":"display to console when output type is pretty"}
 }
 
 func ExampleSetVersion() {
@@ -116,7 +107,7 @@ func ExampleSetOutput() {
 func ExampleNew() {
 	// Set options
 	traceIDField := "trace_id"
-	zl.AddConsoleField(traceIDField)
+	zl.AddConsoleFields(traceIDField)
 
 	// Initialize
 	zl.Init()

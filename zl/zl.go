@@ -11,6 +11,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -27,15 +28,20 @@ var (
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
+	ignoreKeys    []Key
 )
 
 // Init initializes the logger.
 func Init() *zap.Logger {
 	once.Do(func() {
-		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+		if funk.Contains(ignoreKeys, TimeKey) {
+			log.SetFlags(log.Lshortfile)
+		} else {
+			log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+		}
 		initZapLogger()
 		Info("INIT_LOGGER", Console(fmt.Sprintf(
-			"Level: %s, Output: %s, FileName: %s, ",
+			"Level: %s, Output: %s, FileName: %s",
 			logLevel.CapitalString(),
 			outputType.String(),
 			fileName,
@@ -46,28 +52,60 @@ func Init() *zap.Logger {
 
 // See https://pkg.go.dev/go.uber.org/zap
 func initZapLogger() {
-	encoderConfig := zapcore.EncoderConfig{
-		MessageKey:     "message",
-		LevelKey:       "level",
-		TimeKey:        "time",
-		NameKey:        "name",
-		CallerKey:      "caller",
-		FunctionKey:    "function",
-		StacktraceKey:  "stacktrace",
+	enc := zapcore.EncoderConfig{
+		MessageKey:     string(MessageKey),
+		LevelKey:       string(LevelKey),
+		TimeKey:        string(TimeKey),
+		NameKey:        string(NameKey),
+		CallerKey:      string(CallerKey),
+		FunctionKey:    string(FunctionKey),
+		StacktraceKey:  string(StacktraceKey),
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   getCallerEncoder(),
 	}
+	setIgnoreKeys(&enc)
+
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.NewJSONEncoder(enc),
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
 		logLevel,
 	)
 	zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
-		zap.String("version", GetVersion()),
-		zap.String("hostname", *getHost()),
+		getAdditionalFields()...,
 	)
+}
+
+func setIgnoreKeys(enc *zapcore.EncoderConfig) {
+	for i := range ignoreKeys {
+		switch ignoreKeys[i] {
+		case MessageKey:
+			enc.MessageKey = ""
+		case LevelKey:
+			enc.LevelKey = ""
+		case TimeKey:
+			enc.TimeKey = ""
+		case NameKey:
+			enc.NameKey = ""
+		case CallerKey:
+			enc.CallerKey = ""
+		case FunctionKey:
+			enc.FunctionKey = ""
+		case StacktraceKey:
+			enc.StacktraceKey = ""
+		}
+	}
+}
+
+func getAdditionalFields() (fields []zapcore.Field) {
+	if !funk.Contains(ignoreKeys, VersionKey) {
+		fields = append(fields, zap.String("version", GetVersion()))
+	}
+	if !funk.Contains(ignoreKeys, HostnameKey) {
+		fields = append(fields, zap.String("hostname", *getHost()))
+	}
+	return fields
 }
 
 // GetVersion return version when version is set.

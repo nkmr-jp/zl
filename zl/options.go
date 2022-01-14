@@ -8,6 +8,21 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Key is used by each log entry.
+type Key string
+
+const (
+	MessageKey    Key = "message"
+	LevelKey      Key = "level"
+	TimeKey       Key = "time"
+	NameKey       Key = "name"
+	CallerKey     Key = "caller"
+	FunctionKey   Key = "function"
+	StacktraceKey Key = "stacktrace"
+	VersionKey    Key = "version"
+	HostnameKey   Key = "hostname"
+)
+
 type Level int8
 
 const (
@@ -111,9 +126,14 @@ func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
 
-// AddConsoleField Add the fields to be displayed in the console.
-func AddConsoleField(fieldKey ...string) {
+// AddConsoleFields add the fields to be displayed in the console.
+func AddConsoleFields(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
+}
+
+// SetIgnoreKeys set ignore fields from default fields that used in each log.
+func SetIgnoreKeys(key ...Key) {
+	ignoreKeys = key
 }
 
 //
