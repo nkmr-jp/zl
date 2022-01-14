@@ -12,12 +12,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Short log to output to the console.
-func shortLog(msg, levelStr string, fields []zap.Field) {
-	if consoleType != ConsoleTypeAll {
-		return
-	}
-	if outputType != OutputTypeShortConsoleAndFile {
+func prettyLog(msg, levelStr string, fields []zap.Field) {
+	if outputType != PrettyOutput {
 		return
 	}
 	if !checkLevel(levelStr) {
@@ -38,12 +34,8 @@ func shortLog(msg, levelStr string, fields []zap.Field) {
 	}
 }
 
-// Short log to output to the console with error.
-func shortLogWithError(msg string, levelStr string, err error, fields []zap.Field) {
-	if consoleType == ConsoleTypeNone {
-		return
-	}
-	if outputType != OutputTypeShortConsoleAndFile {
+func prettyLogWithError(msg string, levelStr string, err error, fields []zap.Field) {
+	if outputType != PrettyOutput {
 		return
 	}
 	if !checkLevel(levelStr) {

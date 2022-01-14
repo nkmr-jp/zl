@@ -3,6 +3,7 @@ module github.com/nkmr-jp/zap-lightning
 go 1.17
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/thoas/go-funk v0.9.1
 	go.uber.org/zap v1.19.1

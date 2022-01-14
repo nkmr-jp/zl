@@ -8,56 +8,78 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type ConsoleType int
+// Key is used by each log entry.
+type Key string
 
 const (
-	ConsoleTypeAll ConsoleType = iota
-	ConsoleTypeError
-	ConsoleTypeNone
+	MessageKey    Key = "message"
+	LevelKey      Key = "level"
+	TimeKey       Key = "time"
+	NameKey       Key = "name"
+	CallerKey     Key = "caller"
+	FunctionKey   Key = "function"
+	StacktraceKey Key = "stacktrace"
+	VersionKey    Key = "version"
+	HostnameKey   Key = "hostname"
 )
 
-func SetConsoleType(option ConsoleType) {
-	consoleType = option
-}
-
-type OutputType int
+type Level int8
 
 const (
-	// OutputTypeShortConsoleAndFile output simple console log and detail file log (default)
-	OutputTypeShortConsoleAndFile OutputType = iota
-	// OutputTypeConsoleAndFile output detail console log and file log
-	OutputTypeConsoleAndFile
-	// OutputTypeConsole output detail console log
-	OutputTypeConsole
-	// OutputTypeFile output detail file log
-	OutputTypeFile
+	DebugLevel = Level(zapcore.DebugLevel)
+	InfoLevel  = Level(zapcore.InfoLevel)
+	WarnLevel  = Level(zapcore.WarnLevel)
+	ErrorLevel = Level(zapcore.ErrorLevel)
+	FatalLevel = Level(zapcore.FatalLevel)
 )
 
-var outputTypeStrings = [4]string{
-	"ShortConsoleAndFile",
+type Output int
+
+const (
+	// PrettyOutput writes the colored simple log to console,
+	// and writes json structured detail log to file.
+	// it is Default setting.
+	// Recommended for Develop Environment.
+	PrettyOutput Output = iota
+
+	// ConsoleAndFileOutput writes json structured log to console and file.
+	// Recommended for Develop Environment.
+	ConsoleAndFileOutput
+
+	// ConsoleOutput writes json structured log to console.
+	// Recommended for Develop and Production Environment.
+	ConsoleOutput
+
+	// FileOutput writes json structured log to file.
+	// Recommended for Develop and Production Environment.
+	FileOutput
+)
+
+var outputStrings = [4]string{
+	"Pretty",
 	"ConsoleAndFile",
 	"Console",
 	"File",
 }
 
-func (o OutputType) String() string {
-	return outputTypeStrings[o]
+func (o Output) String() string {
+	return outputStrings[o]
 }
 
-func SetOutputType(option OutputType) {
+func SetOutput(option Output) {
 	outputType = option
 }
 
-// SetOutputTypeByString outputTypeStr can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File).
+// SetOutputTypeByString can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File).
 func SetOutputTypeByString(outputTypeStr string) {
-	var output OutputType
+	var output Output
 	if outputTypeStr == "" {
-		SetOutputType(output)
+		SetOutput(output)
 		return
 	}
-	for i, i2 := range outputTypeStrings {
+	for i, i2 := range outputStrings {
 		if outputTypeStr == i2 {
-			SetOutputType(OutputType(i))
+			SetOutput(Output(i))
 			return
 		}
 	}
@@ -67,8 +89,8 @@ func SetOutputTypeByString(outputTypeStr string) {
 	)
 }
 
-func SetLogLevel(option zapcore.Level) {
-	logLevel = option
+func SetLevel(option Level) {
+	logLevel = zapcore.Level(option)
 }
 
 // SetLogLevelByString is set log level. levelStr can use (DEBUG,INFO,WARN,ERROR,FATAL).
@@ -78,11 +100,10 @@ func SetLogLevelByString(levelStr string) {
 	if err != nil {
 		log.Fatalf("%s is invalid level. can use (DEBUG,INFO,WARN,ERROR,FATAL)", levelStr)
 	}
-	SetLogLevel(level)
+	SetLevel(Level(level))
 }
 
-// SetRepositoryCallerEncoder
-// build and set CallerEncoder that build a link to the Repository of the caller's source code.
+// SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.
 func SetRepositoryCallerEncoder(urlFormat, revisionOrTag, srcRootDir string) {
 	if revisionOrTag == "" || srcRootDir == "" {
 		return
@@ -99,28 +120,58 @@ func buildRepositoryCallerEncoder(dir, url string) zapcore.CallerEncoder {
 	}
 }
 
-// SetVersion set version.
-// note: `revisionOrTag` should be a git revision or a tag. ex. `e86b9a7` or `v1.0.0`.
+// SetVersion `revisionOrTag` should be a git revision or a tag. ex. `e86b9a7` or `v1.0.0`.
 func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
 
-// AddConsoleField Set the fields to be displayed in the console.
-func AddConsoleField(fieldKey ...string) {
+// AddConsoleFields add the fields to be displayed in the console.
+func AddConsoleFields(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 
-// Log File Options
-
-// SetLogFile set log file path ex. "./log/app_%Y-%m-%d.log"
-func SetLogFile(file string) {
-	fileName = file
+// SetIgnoreKeys set ignore fields from default fields that used in each log.
+func SetIgnoreKeys(key ...Key) {
+	ignoreKeys = key
 }
 
-// func SetRotationTime(duration time.Duration) {
-// 	rotationTime = duration
-// }
-//
-// func SetPurgeTime(duration time.Duration) {
-// 	purgeTime = duration
-// }
+// SetStdout is changes the console log output from stderr to stdout.
+func SetStdout() {
+	isStdOut = true
+}
+
+// SetFileName set the file to write logs to.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetFileName(val string) {
+	fileName = val
+}
+
+// SetMaxSize set the maximum size in megabytes of the log file before it gets rotated.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetMaxSize(val int) {
+	maxSize = val
+}
+
+// SetMaxAge set the maximum number of days to retain.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetMaxAge(val int) {
+	maxAge = val
+}
+
+// SetMaxBackups set the maximum number of old log files to retain.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetMaxBackups(val int) {
+	maxBackups = val
+}
+
+// SetLocalTime determines if the time used for formatting the timestamps in backup files is the computer's local time.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetLocalTime(val bool) {
+	localTime = val
+}
+
+// SetCompress determines if the rotated log files should be compressed using gzip.
+// See: https://github.com/natefinch/lumberjack#type-logger
+func SetCompress(val bool) {
+	compress = val
+}

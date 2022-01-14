@@ -1,12 +1,18 @@
+// Package zl provides zap based advanced logging features, and it's easy to use.
 package zl
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
+	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -18,54 +24,102 @@ const (
 var (
 	once          sync.Once
 	zapLogger     *zap.Logger
-	consoleType   ConsoleType
-	outputType    OutputType
+	outputType    Output
 	version       string
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
+	ignoreKeys    []Key
+	isStdOut      bool
 )
 
-// Initialize the Logger.
-// Outputs short logs to the console and Write structured and detailed json logs to the log file.
+// Init initializes the logger.
 func Init() *zap.Logger {
 	once.Do(func() {
-		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+		setLog()
 		initZapLogger()
-		Info("INIT_LOGGER")
+		Debug("INIT_LOGGER", Console(fmt.Sprintf(
+			"Level: %s, Output: %s, FileName: %s",
+			logLevel.CapitalString(),
+			outputType.String(),
+			fileName,
+		)))
 	})
 	return zapLogger
 }
 
+func setLog() {
+	if funk.Contains(ignoreKeys, TimeKey) {
+		log.SetFlags(log.Lshortfile)
+	} else {
+		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	}
+	if isStdOut {
+		log.SetOutput(os.Stdout)
+	}
+}
+
 // See https://pkg.go.dev/go.uber.org/zap
 func initZapLogger() {
-	log.Printf("log level: %v", logLevel.CapitalString())
-	log.Printf("output type: %v", outputType.String())
-	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "ts",
-		LevelKey:       "level",
-		NameKey:        "name",
-		CallerKey:      "caller",
-		MessageKey:     "msg",
-		StacktraceKey:  "stacktrace",
-		FunctionKey:    "function",
+	enc := zapcore.EncoderConfig{
+		MessageKey:     string(MessageKey),
+		LevelKey:       string(LevelKey),
+		TimeKey:        string(TimeKey),
+		NameKey:        string(NameKey),
+		CallerKey:      string(CallerKey),
+		FunctionKey:    string(FunctionKey),
+		StacktraceKey:  string(StacktraceKey),
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   getCallerEncoder(),
 	}
+	setIgnoreKeys(&enc)
+
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.NewJSONEncoder(enc),
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
 		logLevel,
 	)
 	zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
-		zap.String("version", getVersion()),
-		zap.String("hostname", *getHost()),
+		getAdditionalFields()...,
 	)
 }
 
-func getVersion() string {
+func setIgnoreKeys(enc *zapcore.EncoderConfig) {
+	for i := range ignoreKeys {
+		switch ignoreKeys[i] {
+		case MessageKey:
+			enc.MessageKey = ""
+		case LevelKey:
+			enc.LevelKey = ""
+		case TimeKey:
+			enc.TimeKey = ""
+		case NameKey:
+			enc.NameKey = ""
+		case CallerKey:
+			enc.CallerKey = ""
+		case FunctionKey:
+			enc.FunctionKey = ""
+		case StacktraceKey:
+			enc.StacktraceKey = ""
+		}
+	}
+}
+
+func getAdditionalFields() (fields []zapcore.Field) {
+	if !funk.Contains(ignoreKeys, VersionKey) {
+		fields = append(fields, zap.String("version", GetVersion()))
+	}
+	if !funk.Contains(ignoreKeys, HostnameKey) {
+		fields = append(fields, zap.String("hostname", *getHost()))
+	}
+	return fields
+}
+
+// GetVersion return version when version is set.
+// or return git commit hash when version is not set.
+func GetVersion() string {
 	if version != "" {
 		return version
 	}
@@ -74,6 +128,45 @@ func getVersion() string {
 	}
 
 	return "undefined"
+}
+
+// Sync logger of Zap's Sync.
+// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
+func Sync() {
+	if outputType != PrettyOutput && outputType != FileOutput {
+		return
+	}
+
+	Debug("FLUSH_LOG_BUFFER")
+	if err := zapLogger.Sync(); err != nil {
+		log.Println(err)
+	}
+}
+
+// SyncWhenStop flush log buffer. when interrupt or terminated.
+func SyncWhenStop() {
+	if outputType != PrettyOutput && outputType != FileOutput {
+		return
+	}
+
+	c := make(chan os.Signal, 1)
+
+	go func() {
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		s := <-c
+
+		sigCode := 0
+		switch s.String() {
+		case "interrupt":
+			sigCode = 2
+		case "terminated":
+			sigCode = 15
+		}
+
+		Debug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		Sync() // flush log buffer
+		os.Exit(128 + sigCode)
+	}()
 }
 
 func getHost() *string {
@@ -94,12 +187,33 @@ func getCallerEncoder() zapcore.CallerEncoder {
 
 func getSyncers() (syncers []zapcore.WriteSyncer) {
 	switch outputType {
-	case OutputTypeShortConsoleAndFile, OutputTypeFile:
-		syncers = append(syncers, zapcore.AddSync(newLumberjack()))
-	case OutputTypeConsoleAndFile:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout), zapcore.AddSync(newLumberjack()))
-	case OutputTypeConsole:
-		syncers = append(syncers, zapcore.AddSync(os.Stdout))
+	case PrettyOutput, FileOutput:
+		syncers = append(syncers, zapcore.AddSync(newRotator()))
+	case ConsoleAndFileOutput:
+		syncers = append(syncers, zapcore.AddSync(getConsoleOutput()), zapcore.AddSync(newRotator()))
+	case ConsoleOutput:
+		syncers = append(syncers, zapcore.AddSync(getConsoleOutput()))
 	}
 	return
+}
+
+func getConsoleOutput() io.Writer {
+	if isStdOut {
+		return os.Stdout
+	} else {
+		return os.Stderr
+	}
+}
+
+// Cleanup removes logger and resets settings. This is mainly used for testing etc.
+func Cleanup() {
+	once = sync.Once{}
+	zapLogger = nil
+	outputType = PrettyOutput
+	version = ""
+	logLevel = zapcore.InfoLevel
+	callerEncoder = nil
+	consoleFields = []string{consoleFieldDefault}
+	ignoreKeys = nil
+	isStdOut = false
 }
