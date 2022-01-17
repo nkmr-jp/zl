@@ -56,7 +56,7 @@ func Example() {
 	// zl.go:140: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","caller":"zl/zl.go:41","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
+	// {"level":"DEBUG","caller":"zl/zl.go:44","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
 	// {"level":"INFO","caller":"zl/example_test.go:37","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
 	// {"level":"ERROR","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
 	// {"level":"DEBUG","caller":"zl/example_test.go:40","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
@@ -77,11 +77,11 @@ func ExampleSetVersion() {
 
 	// Set Options
 	zl.SetVersion(version)
-	zl.SetFileName(fmt.Sprintf("./log/app_%s.jsonl", zl.GetVersion()))
+	fileName := fmt.Sprintf("./log/app_%s.jsonl", zl.GetVersion())
+	zl.SetFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey)
-	zl.SetOutput(zl.ConsoleOutput)
-	zl.SetStdout()
+	zl.SetOutput(zl.ConsoleAndFileOutput)
 
 	// Initialize
 	zl.Init()
@@ -91,8 +91,11 @@ func ExampleSetVersion() {
 	// Write logs
 	zl.Warn("WARN_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
 
+	bytes, _ := os.ReadFile(fileName)
+	fmt.Println(string(bytes))
+
 	// Output:
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L92","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L94","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -100,9 +103,11 @@ func ExampleNew() {
 
 	// Set options
 	traceIDField := "trace_id"
+	fileName := "./log/example-new.jsonl"
 	zl.AddConsoleFields(traceIDField)
 	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetOutput(zl.PrettyOutput)
+	zl.SetFileName(fileName)
 
 	// New
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
@@ -121,7 +126,7 @@ func ExampleNew() {
 	l1.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
 	l2.Info("CONTEXT_SCOPE_INFO_LOG2", zl.Consolef("some message to console: %s", "test"))
 
-	bytes, _ := os.ReadFile("./log/app.jsonl")
+	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
@@ -129,7 +134,7 @@ func ExampleNew() {
 	// example_test.go:118: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
 
 	// Output:
-	// {"level":"INFO","name":"log1","caller":"zl/example_test.go:120","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"ERROR","name":"log1","caller":"zl/example_test.go:121","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"INFO","name":"log2","caller":"zl/example_test.go:122","message":"CONTEXT_SCOPE_INFO_LOG2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","name":"log1","caller":"zl/example_test.go:127","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"ERROR","name":"log1","caller":"zl/example_test.go:128","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","name":"log2","caller":"zl/example_test.go:129","message":"CONTEXT_SCOPE_INFO_LOG2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
 }
