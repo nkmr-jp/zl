@@ -101,21 +101,25 @@ func ExampleNew() {
 	// Set options
 	traceIDField := "trace_id"
 	zl.AddConsoleFields(traceIDField)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetOutput(zl.PrettyOutput)
-
-	// Initialize
-	zl.Init()
-	defer zl.Sync()
-	zl.SyncWhenStop()
 
 	// New
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-	w := zl.New(zap.Int("user_id", 1), zap.Int64(traceIDField, 1642153670000264000))
+	l1 := zl.New(
+		zap.Int("user_id", 1),
+		zap.Int64(traceIDField, 1642153670000264000),
+	).Named("log1")
+
+	l2 := zl.New(
+		zap.Int("user_id", 1),
+		zap.Int64(traceIDField, 1642153670000264000),
+	).Named("log2")
 
 	// Write logs
-	w.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
-	w.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	l1.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
+	l1.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	l2.Info("CONTEXT_SCOPE_INFO_LOG2", zl.Consolef("some message to console: %s", "test"))
 
 	bytes, _ := os.ReadFile("./log/app.jsonl")
 	fmt.Println(string(bytes))
@@ -125,6 +129,7 @@ func ExampleNew() {
 	// example_test.go:118: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
 
 	// Output:
-	// {"level":"INFO","caller":"zl/example_test.go:117","message":"CONTEXT_SCOPE_INFO","version":"a9e7986","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"ERROR","caller":"zl/example_test.go:118","message":"CONTEXT_SCOPE_ERROR","version":"a9e7986","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","name":"log1","caller":"zl/example_test.go:120","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"ERROR","name":"log1","caller":"zl/example_test.go:121","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","name":"log2","caller":"zl/example_test.go:122","message":"CONTEXT_SCOPE_INFO_LOG2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
 }

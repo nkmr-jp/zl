@@ -23,6 +23,7 @@ const (
 
 var (
 	once          sync.Once
+	pretty        *prettyLogger
 	zapLogger     *zap.Logger
 	outputType    Output
 	version       string
@@ -34,10 +35,12 @@ var (
 )
 
 // Init initializes the logger.
-func Init() *zap.Logger {
+func Init() {
 	once.Do(func() {
-		setLog()
-		initZapLogger()
+		if outputType == PrettyOutput {
+			pretty = newPrettyLogger()
+		}
+		zapLogger = newZapLogger()
 		Debug("INIT_LOGGER", Console(fmt.Sprintf(
 			"Level: %s, Output: %s, FileName: %s",
 			logLevel.CapitalString(),
@@ -45,22 +48,10 @@ func Init() *zap.Logger {
 			fileName,
 		)))
 	})
-	return zapLogger
-}
-
-func setLog() {
-	if funk.Contains(ignoreKeys, TimeKey) {
-		log.SetFlags(log.Lshortfile)
-	} else {
-		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	}
-	if isStdOut {
-		log.SetOutput(os.Stdout)
-	}
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
-func initZapLogger() {
+func newZapLogger() *zap.Logger {
 	enc := zapcore.EncoderConfig{
 		MessageKey:     string(MessageKey),
 		LevelKey:       string(LevelKey),
@@ -81,7 +72,7 @@ func initZapLogger() {
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
 		logLevel,
 	)
-	zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
+	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
 		getAdditionalFields()...,
 	)
 }
@@ -208,6 +199,7 @@ func getConsoleOutput() io.Writer {
 // Cleanup removes logger and resets settings. This is mainly used for testing etc.
 func Cleanup() {
 	once = sync.Once{}
+	pretty = nil
 	zapLogger = nil
 	outputType = PrettyOutput
 	version = ""

@@ -6,57 +6,78 @@ import (
 	"go.uber.org/zap"
 )
 
-type Logger struct {
-	Fields []zap.Field
+type zlLogger struct {
+	pretty    *prettyLogger
+	zapLogger *zap.Logger
+	fields    []zap.Field
 }
 
 // New can add additional default fields.
 // ex. Use this when you want to add a common value in the scope of a context, such as an API request.
-func New(fields ...zap.Field) *Logger {
-	return &Logger{Fields: fields}
+func New(fields ...zap.Field) *zlLogger {
+	return &zlLogger{
+		pretty:    newPrettyLogger(),
+		zapLogger: newZapLogger(),
+		fields:    fields,
+	}
 }
 
-func (w *Logger) Debug(msg string, fields ...zap.Field) {
-	fields = append(fields, w.Fields...)
-	logger(msg, "DEBUG", fields).Debug(msg, fields...)
+func (l *zlLogger) Named(name string) *zlLogger {
+	l.zapLogger = l.zapLogger.Named(name)
+	return l
 }
 
-func (w *Logger) Info(msg string, fields ...zap.Field) {
-	fields = append(fields, w.Fields...)
-	logger(msg, "INFO", fields).Info(msg, fields...)
+func (l *zlLogger) Debug(msg string, fields ...zap.Field) {
+	fields = append(fields, l.fields...)
+	l.logger(msg, "DEBUG", fields).Debug(msg, fields...)
 }
 
-func (w *Logger) Warn(msg string, fields ...zap.Field) {
-	fields = append(fields, w.Fields...)
-	logger(msg, "WARN", fields).Warn(msg, fields...)
+func (l *zlLogger) Info(msg string, fields ...zap.Field) {
+	fields = append(fields, l.fields...)
+	l.logger(msg, "INFO", fields).Info(msg, fields...)
 }
 
-func (w *Logger) Error(msg string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), w.Fields...)
-	loggerErr(msg, "ERROR", err, fields).Error(msg, fields...)
+func (l *zlLogger) Warn(msg string, fields ...zap.Field) {
+	fields = append(fields, l.fields...)
+	l.logger(msg, "WARN", fields).Warn(msg, fields...)
 }
 
-func (w *Logger) Fatal(msg string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), w.Fields...)
-	loggerErr(msg, "FATAL", err, fields).Fatal(msg, fields...)
+func (l *zlLogger) Error(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(msg, "ERROR", err, fields).Error(msg, fields...)
 }
 
-func (w *Logger) DebugErr(msg string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), w.Fields...)
-	loggerErr(msg, "DEBUG", err, fields).Debug(msg, fields...)
+func (l *zlLogger) Fatal(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(msg, "FATAL", err, fields).Fatal(msg, fields...)
 }
 
-func (w *Logger) InfoErr(msg string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), w.Fields...)
-	loggerErr(msg, "INFO", err, fields).Info(msg, fields...)
+func (l *zlLogger) DebugErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(msg, "DEBUG", err, fields).Debug(msg, fields...)
 }
 
-func (w *Logger) WarnErr(msg string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), w.Fields...)
-	loggerErr(msg, "WARN", err, fields).Warn(msg, fields...)
+func (l *zlLogger) InfoErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(msg, "INFO", err, fields).Info(msg, fields...)
 }
 
-// Debug is Logger of Zap's Debug.
+func (l *zlLogger) WarnErr(msg string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(msg, "WARN", err, fields).Warn(msg, fields...)
+}
+
+func (l *zlLogger) logger(msg, level string, fields []zap.Field) *zap.Logger {
+	l.pretty.Log(msg, level, fields)
+	return l.zapLogger.WithOptions(zap.AddCallerSkip(1))
+}
+
+func (l *zlLogger) loggerErr(msg, level string, err error, fields []zap.Field) *zap.Logger {
+	l.pretty.LogWithError(msg, level, err, fields)
+	return l.zapLogger.WithOptions(zap.AddCallerSkip(1))
+}
+
+// Debug is zlLogger of Zap's Debug.
 // Outputs a short log to the console. Detailed json log output to log file.
 func Debug(msg string, fields ...zap.Field) {
 	logger(msg, "DEBUG", fields).Debug(msg, fields...)
@@ -96,13 +117,13 @@ func WarnErr(msg string, err error, fields ...zap.Field) {
 
 func logger(msg, level string, fields []zap.Field) *zap.Logger {
 	checkInit()
-	prettyLog(msg, level, fields)
+	pretty.Log(msg, level, fields)
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
 }
 
 func loggerErr(msg, level string, err error, fields []zap.Field) *zap.Logger {
 	checkInit()
-	prettyLogWithError(msg, level, err, fields)
+	pretty.LogWithError(msg, level, err, fields)
 	return zapLogger.WithOptions(zap.AddCallerSkip(1))
 }
 
