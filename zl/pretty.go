@@ -3,16 +3,34 @@ package zl
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
-	. "github.com/logrusorgru/aurora"
+	"github.com/logrusorgru/aurora"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func prettyLog(msg, levelStr string, fields []zap.Field) {
+type prettyLogger struct {
+	Logger *log.Logger
+}
+
+func newPrettyLogger() *prettyLogger {
+	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
+	if funk.Contains(ignoreKeys, TimeKey) {
+		l.SetFlags(log.Lshortfile)
+	}
+	if isStdOut {
+		l.SetOutput(os.Stdout)
+	}
+	return &prettyLogger{
+		Logger: l,
+	}
+}
+
+func (l *prettyLogger) Log(msg, levelStr string, fields []zap.Field) {
 	if outputType != PrettyOutput {
 		return
 	}
@@ -22,31 +40,34 @@ func prettyLog(msg, levelStr string, fields []zap.Field) {
 
 	var fieldMsg string
 	if levelStr == "DEBUG" {
-		msg = Faint(msg).String()
-		fieldMsg = Faint(getConsoleMsg(fields)).String()
+		msg = aurora.Faint(msg).String()
+		fieldMsg = aurora.Faint(getConsoleMsg(fields)).String()
 	} else {
 		fieldMsg = getConsoleMsg(fields)
 	}
 
-	err := log.Output(4, fmt.Sprintf("%v %v%v", color(levelStr), msg, fieldMsg))
+	err := l.Logger.Output(4, fmt.Sprintf("%v %v%v", color(levelStr), msg, fieldMsg))
 	if err != nil {
-		log.Fatal(err)
+		l.Logger.Fatal(err)
 	}
 }
 
-func prettyLogWithError(msg string, levelStr string, err error, fields []zap.Field) {
+func (l *prettyLogger) LogWithError(msg string, levelStr string, err error, fields []zap.Field) {
 	if outputType != PrettyOutput {
 		return
 	}
 	if !checkLevel(levelStr) {
 		return
 	}
-	err2 := log.Output(
+	err2 := l.Logger.Output(
 		4,
-		fmt.Sprintf("%v %v: %v %v", color(levelStr), msg, Magenta(err.Error()), getConsoleMsg(fields)),
+		fmt.Sprintf(
+			"%v %v: %v %v",
+			color(levelStr), msg, aurora.Magenta(err.Error()), getConsoleMsg(fields),
+		),
 	)
 	if err2 != nil {
-		log.Fatal(err2)
+		l.Logger.Fatal(err2)
 	}
 }
 
@@ -77,7 +98,7 @@ func getConsoleMsg(fields []zap.Field) string {
 		}
 	}
 	if consoles != nil {
-		ret = ": " + fmt.Sprintf("%v", Cyan(strings.Join(consoles, ", ")))
+		ret = ": " + fmt.Sprintf("%v", aurora.Cyan(strings.Join(consoles, ", ")))
 	}
 	return ret
 }
@@ -85,15 +106,15 @@ func getConsoleMsg(fields []zap.Field) string {
 func color(level string) string {
 	switch level {
 	case "FATAL":
-		level = Red(level).String()
+		level = aurora.Red(level).String()
 	case "ERROR":
-		level = Red(level).String()
+		level = aurora.Red(level).String()
 	case "WARN":
-		level = Yellow(level).String()
+		level = aurora.Yellow(level).String()
 	case "INFO":
-		level = BrightBlue(level).String()
+		level = aurora.BrightBlue(level).String()
 	case "DEBUG":
-		level = BrightBlack(level).String()
+		level = aurora.BrightBlack(level).String()
 	}
 	return level
 }

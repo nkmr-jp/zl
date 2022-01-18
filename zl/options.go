@@ -2,7 +2,6 @@ package zl
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"go.uber.org/zap/zapcore"
@@ -70,37 +69,8 @@ func SetOutput(option Output) {
 	outputType = option
 }
 
-// SetOutputTypeByString can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File).
-func SetOutputTypeByString(outputTypeStr string) {
-	var output Output
-	if outputTypeStr == "" {
-		SetOutput(output)
-		return
-	}
-	for i, i2 := range outputStrings {
-		if outputTypeStr == i2 {
-			SetOutput(Output(i))
-			return
-		}
-	}
-	log.Fatalf(
-		"%s is invalid type. can use (SimpleConsoleAndFile, ConsoleAndFile, Console, File)",
-		outputTypeStr,
-	)
-}
-
 func SetLevel(option Level) {
 	logLevel = zapcore.Level(option)
-}
-
-// SetLogLevelByString is set log level. levelStr can use (DEBUG,INFO,WARN,ERROR,FATAL).
-func SetLogLevelByString(levelStr string) {
-	var level zapcore.Level
-	err := level.UnmarshalText([]byte(levelStr))
-	if err != nil {
-		log.Fatalf("%s is invalid level. can use (DEBUG,INFO,WARN,ERROR,FATAL)", levelStr)
-	}
-	SetLevel(Level(level))
 }
 
 // SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.
