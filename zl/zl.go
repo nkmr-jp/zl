@@ -50,6 +50,10 @@ func Init() {
 	})
 }
 
+func GetZapLogger() *zap.Logger {
+	return zapLogger
+}
+
 // See https://pkg.go.dev/go.uber.org/zap
 func newZapLogger() *zap.Logger {
 	enc := zapcore.EncoderConfig{
