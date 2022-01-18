@@ -1,6 +1,7 @@
 package zl
 
 import (
+	"fmt"
 	"log"
 
 	"go.uber.org/zap"
@@ -23,6 +24,7 @@ func New(fields ...zap.Field) *zlLogger {
 }
 
 func (l *zlLogger) Named(name string) *zlLogger {
+	l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", name))
 	l.zapLogger = l.zapLogger.Named(name)
 	return l
 }

@@ -24,9 +24,11 @@ func TestMain(m *testing.M) {
 
 func Example() {
 	// Set options
+	fileName := "./log/example.jsonl"
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetIgnoreKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetFileName(fileName)
 
 	// Initialize
 	zl.Init()
@@ -42,27 +44,27 @@ func Example() {
 	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console when output type is pretty"))
 
-	bytes, _ := os.ReadFile("./log/app.jsonl")
+	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:41: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl
-	// example_test.go:37: INFO USER_INFO
-	// example_test.go:39: ERROR ERROR_MESSAGE: error message
-	// example_test.go:40: DEBUG DEBUG_MESSAGE
-	// example_test.go:41: WARN WARN_MESSAGE
-	// example_test.go:42: WARN WARN_MESSAGE_WITH_ERROR: error message
-	// example_test.go:43: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
-	// zl.go:140: DEBUG FLUSH_LOG_BUFFER
+	// zl.go:44: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl
+	// example_test.go:39: INFO USER_INFO
+	// example_test.go:41: ERROR ERROR_MESSAGE: error message
+	// example_test.go:42: DEBUG DEBUG_MESSAGE
+	// example_test.go:43: WARN WARN_MESSAGE
+	// example_test.go:44: WARN WARN_MESSAGE_WITH_ERROR: error message
+	// example_test.go:45: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
+	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","caller":"zl/zl.go:44","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/app.jsonl"}
-	// {"level":"INFO","caller":"zl/example_test.go:37","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","caller":"zl/example_test.go:40","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","caller":"zl/zl.go:44","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+	// {"level":"INFO","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"level":"DEBUG","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
+	// {"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"level":"WARN","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"level":"INFO","caller":"zl/example_test.go:45","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
 }
 
 func ExampleSetVersion() {
@@ -77,7 +79,7 @@ func ExampleSetVersion() {
 
 	// Set Options
 	zl.SetVersion(version)
-	fileName := fmt.Sprintf("./log/app_%s.jsonl", zl.GetVersion())
+	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
 	zl.SetFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey)
@@ -89,13 +91,15 @@ func ExampleSetVersion() {
 	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
 	// Write logs
+	zl.Info("INFO_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
 	zl.Warn("WARN_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L94","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L94","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -105,9 +109,15 @@ func ExampleNew() {
 	traceIDField := "trace_id"
 	fileName := "./log/example-new.jsonl"
 	zl.AddConsoleFields(traceIDField)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetLevel(zl.DebugLevel)
+	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetFileName(fileName)
+
+	// Initialize
+	zl.Init()
+	defer zl.Sync()   // flush log buffer
+	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
 	// New
 	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
@@ -122,19 +132,26 @@ func ExampleNew() {
 	).Named("log2")
 
 	// Write logs
+	zl.Info("GLOBAL_INFO")
 	l1.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
 	l1.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
-	l2.Info("CONTEXT_SCOPE_INFO_LOG2", zl.Consolef("some message to console: %s", "test"))
+	l2.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// example_test.go:117: INFO CONTEXT_SCOPE_INFO: some message to console: test, 1642153670000264000
-	// example_test.go:118: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
+	// zl.go:44: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl
+	// example_test.go:135: INFO GLOBAL_INFO
+	// log1 | example_test.go:136: INFO CONTEXT_SCOPE_INFO: some message to console: test, 1642153670000264000
+	// log1 | example_test.go:137: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
+	// log2 | example_test.go:138: INFO CONTEXT_SCOPE_INFO2: some message to console: test, 1642153670000264000
+	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"INFO","name":"log1","caller":"zl/example_test.go:127","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"ERROR","name":"log1","caller":"zl/example_test.go:128","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"INFO","name":"log2","caller":"zl/example_test.go:129","message":"CONTEXT_SCOPE_INFO_LOG2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
+	// {"level":"INFO","message":"GLOBAL_INFO"}
+	// {"level":"INFO","name":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"ERROR","name":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","name":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
 }

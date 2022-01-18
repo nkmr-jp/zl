@@ -8,29 +8,27 @@ It provides presets for easy implementation of advanced logging features.
 ## How it works
 
 ```sh
-go test -v
+go test ./zl -v
 ```
 
-### Simple log to console
-![img1.png](img1.png)
+### Write Colored Simple Log to console
+![img_1.png](img_1.png)
 
-### Json structured log to file
+### Write JSON Structured Log to file
 
 ```shell
-cat log/app_2022-01-01.jsonl
+cat ./zl/log/example.jsonl
 ```
 
 ```json lines
-{"level":"INFO","ts":"2022-01-01T16:29:17.366451+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/zl/logger.go#L31","function":"github.com/nkmr-jp/zap-lightning/zl.InitLogger.func1","msg":"INIT_LOGGER","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
-{"level":"INFO","ts":"2022-01-01T16:29:17.366869+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L47","function":"github.com/nkmr-jp/zap-lightning_test.Example","msg":"USER_INFO","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","name":"Alice","age":20}
-{"level":"ERROR","ts":"2022-01-01T16:29:17.366917+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L50","function":"github.com/nkmr-jp/zap-lightning_test.Example","msg":"SOME_ERROR","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","error":"error message","stacktrace":"github.com/nkmr-jp/zap-lightning_test.Example\n\t/Users/nkmr/ghq/github.com/nkmr-jp/zap-lightning/example_test.go:50\ntesting.runExample\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/run_example.go:64\ntesting.runExamples\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/example.go:44\ntesting.(*M).Run\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/testing.go:1505\nmain.main\n\t_testmain.go:45\nruntime.main\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/runtime/proc.go:255"}
-{"level":"DEBUG","ts":"2022-01-01T16:29:17.36699+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L52","function":"github.com/nkmr-jp/zap-lightning_test.Example","msg":"DEBUG_MESSAGE","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
-{"level":"WARN","ts":"2022-01-01T16:29:17.367017+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L53","function":"github.com/nkmr-jp/zap-lightning_test.Example","msg":"WARN_MESSAGE","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
-{"level":"INFO","ts":"2022-01-01T16:29:17.367045+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L55","function":"github.com/nkmr-jp/zap-lightning_test.Example","msg":"DISPLAY_TO_CONSOLE","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","console":"display to console"}
-{"level":"INFO","ts":"2022-01-01T16:29:17.36707+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/zl/wrapper.go#L76","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","msg":"FLUSH_LOG_BUFFER","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
-{"level":"INFO","ts":"2022-01-01T16:29:17.367266+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L71","function":"github.com/nkmr-jp/zap-lightning_test.ExampleNewWrapper","msg":"CONTEXT_SCOPE_INFO","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","user_id":1,"trace_id":1641022157367216000}
-{"level":"ERROR","ts":"2022-01-01T16:29:17.36734+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/example_test.go#L72","function":"github.com/nkmr-jp/zap-lightning_test.ExampleNewWrapper","msg":"CONTEXT_SCOPE_ERROR","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local","error":"context scope error message","user_id":1,"trace_id":1641022157367216000,"stacktrace":"github.com/nkmr-jp/zap-lightning_test.ExampleNewWrapper\n\t/Users/nkmr/ghq/github.com/nkmr-jp/zap-lightning/example_test.go:72\ntesting.runExample\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/run_example.go:64\ntesting.runExamples\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/example.go:44\ntesting.(*M).Run\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/testing/testing.go:1505\nmain.main\n\t_testmain.go:45\nruntime.main\n\t/Users/nkmr/.anyenv/envs/goenv/versions/1.17.5/src/runtime/proc.go:255"}
-{"level":"INFO","ts":"2022-01-01T16:29:17.367387+09:00","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v0.1.1/zl/wrapper.go#L76","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","msg":"FLUSH_LOG_BUFFER","version":"v0.1.1","hostname":"nkmrnoMacBook-Pro.local"}
+{"level":"DEBUG","caller":"zl/zl.go:44","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+{"level":"INFO","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+{"level":"ERROR","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+{"level":"DEBUG","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
+{"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+{"level":"WARN","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+{"level":"INFO","caller":"zl/example_test.go:45","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+{"level":"DEBUG","caller":"zl/zl.go:131","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","message":"FLUSH_LOG_BUFFER"}
 ```
 
 ## Install
@@ -46,7 +44,7 @@ go get -u github.com/nkmr-jp/zap-lightning/zl@develop
 
 ## Usage
 
-See: [example_test.go](example_test.go)
+See: [example_test.go](./zl/example_test.go)
 
 ## Features
 - Json structured log to file.
