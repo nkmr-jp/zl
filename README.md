@@ -26,7 +26,7 @@ go test ./zl -v
 
 ### Write Colored Simple Log ( Console )
 
-It can select the log output method. see: [options.go](./zl/options.go#35)
+It can select the log output method. see: [options.go](./zl/options.go#L35)
 
 ![img_1.png](img_1.png)
 
