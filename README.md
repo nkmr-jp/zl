@@ -1,9 +1,22 @@
 Refactoring for the release of v1.0
 
 # Zap Lightning
+Zap Lightning  provides [zap](https://github.com/uber-go/zap) based advanced logging features, and it's easy to use.
 
-Zap Lightning is a lightweight wrapper for [zap](https://github.com/uber-go/zap).<br>
-It provides presets for easy implementation of advanced logging features.
+## Install
+
+```sh
+go get -u github.com/nkmr-jp/zap-lightning/zl
+```
+
+```sh
+# If you want to use the latest feature.
+go get -u github.com/nkmr-jp/zap-lightning/zl@develop
+```
+
+## Usage
+
+See: [example_test.go](./zl/example_test.go)
 
 ## How it works
 
@@ -11,10 +24,10 @@ It provides presets for easy implementation of advanced logging features.
 go test ./zl -v
 ```
 
-### Write Colored Simple Log to console
+### Write Colored Simple Log ( Console )
 ![img_1.png](img_1.png)
 
-### Write JSON Structured Log to file
+### Write JSON Structured Log ( File )
 
 ```shell
 cat ./zl/log/example.jsonl
@@ -31,20 +44,7 @@ cat ./zl/log/example.jsonl
 {"level":"DEBUG","caller":"zl/zl.go:131","function":"github.com/nkmr-jp/zap-lightning/zl.Sync","message":"FLUSH_LOG_BUFFER"}
 ```
 
-## Install
 
-```sh
-go get -u github.com/nkmr-jp/zap-lightning/zl
-```
-
-```sh
-# If you want to use the latest feature.
-go get -u github.com/nkmr-jp/zap-lightning/zl@develop
-```
-
-## Usage
-
-See: [example_test.go](./zl/example_test.go)
 
 ## Features
 - Json structured log to file.
