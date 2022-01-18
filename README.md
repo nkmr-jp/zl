@@ -24,13 +24,13 @@ See: [example_test.go](./zl/example_test.go)
 go test ./zl -v
 ```
 
-### Write Colored Simple Log ( Console )
+### Console. simple log with color
 
 It can select the log output method. see: [options.go](./zl/options.go#L35)
 
 ![img_1.png](img_1.png)
 
-### Write JSON Structured Log ( File )
+### File. json structured log with detail 
 
 ```shell
 cat ./zl/log/example.jsonl
