@@ -18,6 +18,9 @@ type prettyLogger struct {
 }
 
 func newPrettyLogger() *prettyLogger {
+	if outputType != PrettyOutput {
+		return nil
+	}
 	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
 	if funk.Contains(ignoreKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
@@ -30,40 +33,28 @@ func newPrettyLogger() *prettyLogger {
 	}
 }
 
-func (l *prettyLogger) Log(msg, levelStr string, fields []zap.Field) {
+func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) {
 	if outputType != PrettyOutput {
 		return
 	}
-	if !checkLevel(levelStr) {
-		return
-	}
-
-	var fieldMsg string
-	if levelStr == "DEBUG" {
-		msg = aurora.Faint(msg).String()
-		fieldMsg = aurora.Faint(getConsoleMsg(fields)).String()
-	} else {
-		fieldMsg = getConsoleMsg(fields)
-	}
-
-	err := l.Logger.Output(4, fmt.Sprintf("%v %v%v", color(levelStr), msg, fieldMsg))
+	err := l.Logger.Output(4,
+		l.coloredLevel(level)+" "+l.coloredMsg(nil, msg, level, fields),
+	)
 	if err != nil {
 		l.Logger.Fatal(err)
 	}
 }
 
-func (l *prettyLogger) LogWithError(msg string, levelStr string, err error, fields []zap.Field) {
+func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, fields []zap.Field) {
 	if outputType != PrettyOutput {
-		return
-	}
-	if !checkLevel(levelStr) {
 		return
 	}
 	err2 := l.Logger.Output(
 		4,
-		fmt.Sprintf(
-			"%v %v: %v %v",
-			color(levelStr), msg, aurora.Magenta(err.Error()), getConsoleMsg(fields),
+		l.coloredLevel(level)+" "+l.coloredMsg(
+			err,
+			fmt.Sprintf("%v: %v", msg, aurora.Magenta(err.Error())),
+			level, fields,
 		),
 	)
 	if err2 != nil {
@@ -71,18 +62,18 @@ func (l *prettyLogger) LogWithError(msg string, levelStr string, err error, fiel
 	}
 }
 
-func checkLevel(levelStr string) bool {
-	var level zapcore.Level
-	if err := level.UnmarshalText([]byte(levelStr)); err != nil {
-		return false
+func (l *prettyLogger) coloredMsg(err error, msg string, level zapcore.Level, fields []zap.Field) string {
+	var fieldMsg string
+	if level == DebugLevel {
+		msg = aurora.Faint(msg).String()
+		fieldMsg = aurora.Faint(l.consoleMsg(err, fields)).String()
+	} else {
+		fieldMsg = l.consoleMsg(err, fields)
 	}
-	if logLevel > level {
-		return false
-	}
-	return true
+	return fmt.Sprintf("%s%s", msg, fieldMsg)
 }
 
-func getConsoleMsg(fields []zap.Field) string {
+func (l *prettyLogger) consoleMsg(err error, fields []zap.Field) string {
 	var ret string
 	var consoles []string
 	for i := range fields {
@@ -93,28 +84,31 @@ func getConsoleMsg(fields []zap.Field) string {
 			} else {
 				val = strconv.Itoa(int(fields[i].Integer))
 			}
-			// consoles = append(consoles, fmt.Sprintf("%s=%s", v.Key, val))
-			consoles = append(consoles, val)
+			consoles = append(consoles, aurora.Cyan(val).String())
 		}
 	}
 	if consoles != nil {
-		ret = ": " + fmt.Sprintf("%v", aurora.Cyan(strings.Join(consoles, ", ")))
+		prefix := ": "
+		if err != nil {
+			prefix = " , "
+		}
+		ret = prefix + fmt.Sprintf("%v", strings.Join(consoles, " , "))
 	}
 	return ret
 }
 
-func color(level string) string {
+func (l *prettyLogger) coloredLevel(level zapcore.Level) string {
 	switch level {
-	case "FATAL":
-		level = aurora.Red(level).String()
-	case "ERROR":
-		level = aurora.Red(level).String()
-	case "WARN":
-		level = aurora.Yellow(level).String()
-	case "INFO":
-		level = aurora.BrightBlue(level).String()
-	case "DEBUG":
-		level = aurora.BrightBlack(level).String()
+	case FatalLevel:
+		return aurora.Red(level.CapitalString()).String()
+	case ErrorLevel:
+		return aurora.Red(level.CapitalString()).String()
+	case WarnLevel:
+		return aurora.Yellow(level.CapitalString()).String()
+	case InfoLevel:
+		return aurora.BrightBlue(level.CapitalString()).String()
+	case DebugLevel:
+		return aurora.BrightBlack(level.CapitalString()).String()
 	}
-	return level
+	return ""
 }

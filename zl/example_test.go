@@ -43,6 +43,7 @@ func Example() {
 	zl.Warn("WARN_MESSAGE", zap.Error(err))    // warn level log with error message.
 	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console when output type is pretty"))
+	zl.DebugErr("DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE", err, zl.Console("display to console when output type is pretty")) // same to above.
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
@@ -55,6 +56,7 @@ func Example() {
 	// example_test.go:43: WARN WARN_MESSAGE
 	// example_test.go:44: WARN WARN_MESSAGE_WITH_ERROR: error message
 	// example_test.go:45: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
+	// example_test.go:46: DEBUG DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE: error message , display to console when output type is pretty
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
@@ -65,6 +67,7 @@ func Example() {
 	// {"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
 	// {"level":"WARN","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
 	// {"level":"INFO","caller":"zl/example_test.go:45","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","caller":"zl/example_test.go:46","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
 
 func ExampleSetVersion() {
