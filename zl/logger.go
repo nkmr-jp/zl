@@ -124,13 +124,13 @@ func WarnErr(msg string, err error, fields ...zap.Field) {
 func logger(msg string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	checkInit()
 	pretty.log(msg, level, fields)
-	return zapLogger.WithOptions(zap.AddCallerSkip(1))
+	return zapLogger
 }
 
 func loggerErr(msg string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
 	checkInit()
 	pretty.logWithError(msg, level, err, fields)
-	return zapLogger.WithOptions(zap.AddCallerSkip(1))
+	return zapLogger
 }
 
 func checkInit() {

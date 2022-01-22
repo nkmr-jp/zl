@@ -53,7 +53,7 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 		4,
 		l.coloredLevel(level)+" "+l.coloredMsg(
 			err,
-			fmt.Sprintf("%v: %v", msg, aurora.Magenta(err.Error())),
+			fmt.Sprintf("%s%s%s", msg, separator, aurora.Magenta(err.Error())),
 			level, fields,
 		),
 	)
@@ -88,11 +88,7 @@ func (l *prettyLogger) consoleMsg(err error, fields []zap.Field) string {
 		}
 	}
 	if consoles != nil {
-		prefix := ": "
-		if err != nil {
-			prefix = " , "
-		}
-		ret = prefix + fmt.Sprintf("%v", strings.Join(consoles, " , "))
+		ret = separator + fmt.Sprintf("%s", strings.Join(consoles, separator))
 	}
 	return ret
 }

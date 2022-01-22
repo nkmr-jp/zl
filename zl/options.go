@@ -110,6 +110,11 @@ func SetStdout() {
 	isStdOut = true
 }
 
+// SetSeparator is changes the console log output separator.
+func SetSeparator(val string) {
+	separator = val
+}
+
 // SetFileName set the file to write logs to.
 // See: https://github.com/natefinch/lumberjack#type-logger
 func SetFileName(val string) {
