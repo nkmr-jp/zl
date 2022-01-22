@@ -22,14 +22,14 @@ const (
 	HostnameKey   Key = "hostname"
 )
 
-type Level int8
+type Level zapcore.Level
 
 const (
-	DebugLevel = Level(zapcore.DebugLevel)
-	InfoLevel  = Level(zapcore.InfoLevel)
-	WarnLevel  = Level(zapcore.WarnLevel)
-	ErrorLevel = Level(zapcore.ErrorLevel)
-	FatalLevel = Level(zapcore.FatalLevel)
+	DebugLevel = zapcore.DebugLevel
+	InfoLevel  = zapcore.InfoLevel
+	WarnLevel  = zapcore.WarnLevel
+	ErrorLevel = zapcore.ErrorLevel
+	FatalLevel = zapcore.FatalLevel
 )
 
 type Output int
@@ -69,8 +69,8 @@ func SetOutput(option Output) {
 	outputType = option
 }
 
-func SetLevel(option Level) {
-	logLevel = zapcore.Level(option)
+func SetLevel(option zapcore.Level) {
+	logLevel = option
 }
 
 // SetRepositoryCallerEncoder is set CallerEncoder. it set caller's source code's URL of the Repository that called.
@@ -108,6 +108,11 @@ func SetIgnoreKeys(key ...Key) {
 // SetStdout is changes the console log output from stderr to stdout.
 func SetStdout() {
 	isStdOut = true
+}
+
+// SetSeparator is changes the console log output separator.
+func SetSeparator(val string) {
+	separator = val
 }
 
 // SetFileName set the file to write logs to.

@@ -27,7 +27,7 @@ func Example() {
 	fileName := "./log/example.jsonl"
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetFileName(fileName)
 
 	// Initialize
@@ -43,6 +43,7 @@ func Example() {
 	zl.Warn("WARN_MESSAGE", zap.Error(err))    // warn level log with error message.
 	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console when output type is pretty"))
+	zl.DebugErr("DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE", err, zl.Console("display to console when output type is pretty")) // same to above.
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
@@ -55,16 +56,18 @@ func Example() {
 	// example_test.go:43: WARN WARN_MESSAGE
 	// example_test.go:44: WARN WARN_MESSAGE_WITH_ERROR: error message
 	// example_test.go:45: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
+	// example_test.go:46: DEBUG DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE: error message , display to console when output type is pretty
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","caller":"zl/zl.go:44","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
-	// {"level":"INFO","caller":"zl/example_test.go:39","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","caller":"zl/example_test.go:41","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","caller":"zl/example_test.go:42","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","caller":"zl/example_test.go:43","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","caller":"zl/example_test.go:44","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","caller":"zl/example_test.go:45","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
 
 func ExampleSetVersion() {
@@ -98,8 +101,8 @@ func ExampleSetVersion() {
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L94","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L97","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L98","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {

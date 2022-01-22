@@ -32,6 +32,7 @@ var (
 	consoleFields = []string{consoleFieldDefault}
 	ignoreKeys    []Key
 	isStdOut      bool
+	separator     = " : "
 )
 
 // Init initializes the logger.
@@ -76,9 +77,11 @@ func newZapLogger() *zap.Logger {
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
 		logLevel,
 	)
-	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel)).With(
-		getAdditionalFields()...,
-	)
+	return zap.New(core,
+		zap.AddCallerSkip(1),
+		zap.AddCaller(),
+		zap.AddStacktrace(zapcore.ErrorLevel),
+	).With(getAdditionalFields()...)
 }
 
 func setIgnoreKeys(enc *zapcore.EncoderConfig) {
@@ -212,4 +215,5 @@ func Cleanup() {
 	consoleFields = []string{consoleFieldDefault}
 	ignoreKeys = nil
 	isStdOut = false
+	separator = " : "
 }
