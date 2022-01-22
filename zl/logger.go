@@ -24,112 +24,112 @@ func New(fields ...zap.Field) *zlLogger {
 	}
 }
 
-func (l *zlLogger) Named(name string) *zlLogger {
-	l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", name))
-	l.zapLogger = l.zapLogger.Named(name)
+func (l *zlLogger) Named(loggerName string) *zlLogger {
+	l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
+	l.zapLogger = l.zapLogger.Named(loggerName)
 	return l
 }
 
-func (l *zlLogger) Debug(msg string, fields ...zap.Field) {
+func (l *zlLogger) Debug(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
-	l.logger(msg, DebugLevel, fields).Debug(msg, fields...)
+	l.logger(message, DebugLevel, fields).Debug(message, fields...)
 }
 
-func (l *zlLogger) Info(msg string, fields ...zap.Field) {
+func (l *zlLogger) Info(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
-	l.logger(msg, InfoLevel, fields).Info(msg, fields...)
+	l.logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) Warn(msg string, fields ...zap.Field) {
+func (l *zlLogger) Warn(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
-	l.logger(msg, WarnLevel, fields).Warn(msg, fields...)
+	l.logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) Error(msg string, err error, fields ...zap.Field) {
+func (l *zlLogger) Error(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(msg, ErrorLevel, err, fields).Error(msg, fields...)
+	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
-func (l *zlLogger) Fatal(msg string, err error, fields ...zap.Field) {
+func (l *zlLogger) Fatal(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(msg, FatalLevel, err, fields).Fatal(msg, fields...)
+	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
 }
 
-func (l *zlLogger) DebugErr(msg string, err error, fields ...zap.Field) {
+func (l *zlLogger) DebugErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(msg, DebugLevel, err, fields).Debug(msg, fields...)
+	l.loggerErr(message, DebugLevel, err, fields).Debug(message, fields...)
 }
 
-func (l *zlLogger) InfoErr(msg string, err error, fields ...zap.Field) {
+func (l *zlLogger) InfoErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(msg, InfoLevel, err, fields).Info(msg, fields...)
+	l.loggerErr(message, InfoLevel, err, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) WarnErr(msg string, err error, fields ...zap.Field) {
+func (l *zlLogger) WarnErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(msg, WarnLevel, err, fields).Warn(msg, fields...)
+	l.loggerErr(message, WarnLevel, err, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) logger(msg string, level zapcore.Level, fields []zap.Field) *zap.Logger {
-	l.pretty.log(msg, level, fields)
+func (l *zlLogger) logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
+	l.pretty.log(message, level, fields)
 	return l.zapLogger
 }
 
-func (l *zlLogger) loggerErr(msg string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
-	l.pretty.logWithError(msg, level, err, fields)
+func (l *zlLogger) loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
+	l.pretty.logWithError(message, level, err, fields)
 	return l.zapLogger
 }
 
 // Debug is wrapper of Zap's Debug.
-func Debug(msg string, fields ...zap.Field) {
-	logger(msg, DebugLevel, fields).Debug(msg, fields...)
+func Debug(message string, fields ...zap.Field) {
+	logger(message, DebugLevel, fields).Debug(message, fields...)
 }
 
 // Info is wrapper of Zap's Info.
-func Info(msg string, fields ...zap.Field) {
-	logger(msg, InfoLevel, fields).Info(msg, fields...)
+func Info(message string, fields ...zap.Field) {
+	logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
 // Warn is wrapper of Zap's Warn.
-func Warn(msg string, fields ...zap.Field) {
-	logger(msg, WarnLevel, fields).Warn(msg, fields...)
+func Warn(message string, fields ...zap.Field) {
+	logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
 // Error is wrapper of Zap's Error with error field.
-func Error(msg string, err error, fields ...zap.Field) {
-	loggerErr(msg, ErrorLevel, err, fields).Error(msg, append(fields, zap.Error(err))...)
+func Error(message string, err error, fields ...zap.Field) {
+	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
 }
 
 // Fatal is wrapper of Zap's Fatal.
-func Fatal(msg string, err error, fields ...zap.Field) {
-	loggerErr(msg, FatalLevel, err, fields).Fatal(msg, append(fields, zap.Error(err))...)
+func Fatal(message string, err error, fields ...zap.Field) {
+	loggerErr(message, FatalLevel, err, fields).Fatal(message, append(fields, zap.Error(err))...)
 }
 
 // DebugErr is Outputs a Debug log with error field.
-func DebugErr(msg string, err error, fields ...zap.Field) {
-	loggerErr(msg, DebugLevel, err, fields).Debug(msg, append(fields, zap.Error(err))...)
+func DebugErr(message string, err error, fields ...zap.Field) {
+	loggerErr(message, DebugLevel, err, fields).Debug(message, append(fields, zap.Error(err))...)
 }
 
 // InfoErr is Outputs a Info log with error field.
-func InfoErr(msg string, err error, fields ...zap.Field) {
+func InfoErr(message string, err error, fields ...zap.Field) {
 	err.Error()
-	loggerErr(msg, InfoLevel, err, fields).Info(msg, append(fields, zap.Error(err))...)
+	loggerErr(message, InfoLevel, err, fields).Info(message, append(fields, zap.Error(err))...)
 }
 
 // WarnErr is Outputs a Warn log with error field.
-func WarnErr(msg string, err error, fields ...zap.Field) {
-	loggerErr(msg, WarnLevel, err, fields).Warn(msg, append(fields, zap.Error(err))...)
+func WarnErr(message string, err error, fields ...zap.Field) {
+	loggerErr(message, WarnLevel, err, fields).Warn(message, append(fields, zap.Error(err))...)
 }
 
-func logger(msg string, level zapcore.Level, fields []zap.Field) *zap.Logger {
+func logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	checkInit()
-	pretty.log(msg, level, fields)
+	pretty.log(message, level, fields)
 	return zapLogger
 }
 
-func loggerErr(msg string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
+func loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
 	checkInit()
-	pretty.logWithError(msg, level, err, fields)
+	pretty.logWithError(message, level, err, fields)
 	return zapLogger
 }
 

@@ -30,7 +30,7 @@ var (
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
-	ignoreKeys    []Key
+	omitKeys      []Key
 	isStdOut      bool
 	separator     = " : "
 )
@@ -61,7 +61,7 @@ func newZapLogger() *zap.Logger {
 		MessageKey:     string(MessageKey),
 		LevelKey:       string(LevelKey),
 		TimeKey:        string(TimeKey),
-		NameKey:        string(NameKey),
+		NameKey:        string(LoggerKey),
 		CallerKey:      string(CallerKey),
 		FunctionKey:    string(FunctionKey),
 		StacktraceKey:  string(StacktraceKey),
@@ -70,7 +70,7 @@ func newZapLogger() *zap.Logger {
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   getCallerEncoder(),
 	}
-	setIgnoreKeys(&enc)
+	setOmitKeys(&enc)
 
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(enc),
@@ -84,33 +84,33 @@ func newZapLogger() *zap.Logger {
 	).With(getAdditionalFields()...)
 }
 
-func setIgnoreKeys(enc *zapcore.EncoderConfig) {
-	for i := range ignoreKeys {
-		switch ignoreKeys[i] {
+func setOmitKeys(enc *zapcore.EncoderConfig) {
+	for i := range omitKeys {
+		switch omitKeys[i] {
 		case MessageKey:
-			enc.MessageKey = ""
+			enc.MessageKey = zapcore.OmitKey
 		case LevelKey:
-			enc.LevelKey = ""
+			enc.LevelKey = zapcore.OmitKey
 		case TimeKey:
-			enc.TimeKey = ""
-		case NameKey:
-			enc.NameKey = ""
+			enc.TimeKey = zapcore.OmitKey
+		case LoggerKey:
+			enc.NameKey = zapcore.OmitKey
 		case CallerKey:
-			enc.CallerKey = ""
+			enc.CallerKey = zapcore.OmitKey
 		case FunctionKey:
-			enc.FunctionKey = ""
+			enc.FunctionKey = zapcore.OmitKey
 		case StacktraceKey:
-			enc.StacktraceKey = ""
+			enc.StacktraceKey = zapcore.OmitKey
 		}
 	}
 }
 
 func getAdditionalFields() (fields []zapcore.Field) {
-	if !funk.Contains(ignoreKeys, VersionKey) {
-		fields = append(fields, zap.String("version", GetVersion()))
+	if !funk.Contains(omitKeys, VersionKey) {
+		fields = append(fields, zap.String(string(VersionKey), GetVersion()))
 	}
-	if !funk.Contains(ignoreKeys, HostnameKey) {
-		fields = append(fields, zap.String("hostname", *getHost()))
+	if !funk.Contains(omitKeys, HostnameKey) {
+		fields = append(fields, zap.String(string(HostnameKey), *getHost()))
 	}
 	return fields
 }
@@ -213,7 +213,7 @@ func Cleanup() {
 	logLevel = zapcore.InfoLevel
 	callerEncoder = nil
 	consoleFields = []string{consoleFieldDefault}
-	ignoreKeys = nil
+	omitKeys = nil
 	isStdOut = false
 	separator = " : "
 }

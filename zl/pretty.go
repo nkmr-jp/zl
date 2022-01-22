@@ -22,7 +22,7 @@ func newPrettyLogger() *prettyLogger {
 		return nil
 	}
 	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
-	if funk.Contains(ignoreKeys, TimeKey) {
+	if funk.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
 	}
 	if isStdOut {

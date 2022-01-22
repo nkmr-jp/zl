@@ -27,7 +27,7 @@ func Example() {
 	fileName := "./log/example.jsonl"
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetFileName(fileName)
 
 	// Initialize
@@ -85,7 +85,7 @@ func ExampleSetVersion() {
 	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
 	zl.SetFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey)
 	zl.SetOutput(zl.ConsoleAndFileOutput)
 
 	// Initialize
@@ -113,7 +113,7 @@ func ExampleNew() {
 	fileName := "./log/example-new.jsonl"
 	zl.AddConsoleFields(traceIDField)
 	zl.SetLevel(zl.DebugLevel)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetFileName(fileName)
 
@@ -123,7 +123,7 @@ func ExampleNew() {
 	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
 	// New
-	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
+	// e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 	l1 := zl.New(
 		zap.Int("user_id", 1),
 		zap.Int64(traceIDField, 1642153670000264000),
@@ -154,7 +154,7 @@ func ExampleNew() {
 	// Output:
 	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
 	// {"level":"INFO","message":"GLOBAL_INFO"}
-	// {"level":"INFO","name":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"ERROR","name":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"INFO","name":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
 }
