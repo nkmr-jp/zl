@@ -72,12 +72,12 @@ func (l *zlLogger) WarnErr(msg string, err error, fields ...zap.Field) {
 
 func (l *zlLogger) logger(msg string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	l.pretty.log(msg, level, fields)
-	return l.zapLogger.WithOptions(zap.AddCallerSkip(1))
+	return l.zapLogger
 }
 
 func (l *zlLogger) loggerErr(msg string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
 	l.pretty.logWithError(msg, level, err, fields)
-	return l.zapLogger.WithOptions(zap.AddCallerSkip(1))
+	return l.zapLogger
 }
 
 // Debug is wrapper of Zap's Debug.
