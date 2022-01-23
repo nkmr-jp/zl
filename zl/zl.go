@@ -33,6 +33,7 @@ var (
 	omitKeys      []Key
 	isStdOut      bool
 	separator     = " : "
+	pid           int
 )
 
 // Init initializes the logger.
@@ -42,17 +43,18 @@ func Init() {
 			pretty = newPrettyLogger()
 		}
 		zapLogger = newZapLogger()
+		var p string
+		if pid != 0 {
+			p = fmt.Sprintf(", PID: %d", pid)
+		}
 		Debug("INIT_LOGGER", Console(fmt.Sprintf(
-			"Level: %s, Output: %s, FileName: %s",
+			"Level: %s, Output: %s, FileName: %s%s",
 			logLevel.CapitalString(),
 			outputType.String(),
 			fileName,
+			p,
 		)))
 	})
-}
-
-func GetZapLogger() *zap.Logger {
-	return zapLogger
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
@@ -112,6 +114,10 @@ func getAdditionalFields() (fields []zapcore.Field) {
 	if !funk.Contains(omitKeys, HostnameKey) {
 		fields = append(fields, zap.String(string(HostnameKey), *getHost()))
 	}
+	if !funk.Contains(omitKeys, PIDKey) {
+		pid = os.Getpid()
+		fields = append(fields, zap.Int(string(PIDKey), pid))
+	}
 	return fields
 }
 
@@ -134,11 +140,10 @@ func Sync() {
 	if outputType != PrettyOutput && outputType != FileOutput {
 		return
 	}
-
-	Debug("FLUSH_LOG_BUFFER")
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
+	pretty.printTraces()
 }
 
 // SyncWhenStop flush log buffer. when interrupt or terminated.
@@ -216,4 +221,11 @@ func Cleanup() {
 	omitKeys = nil
 	isStdOut = false
 	separator = " : "
+
+	fileName = ""
+	maxSize = 0
+	maxBackups = 0
+	maxAge = 0
+	localTime = false
+	compress = false
 }

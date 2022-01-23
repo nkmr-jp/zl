@@ -20,7 +20,16 @@ const (
 	StacktraceKey Key = "stacktrace"
 	VersionKey    Key = "version"
 	HostnameKey   Key = "hostname"
+	PIDKey        Key = "pid"
 )
+
+type Trace struct {
+	Level      zapcore.Level `json:"level"`
+	Message    string        `json:"message"`
+	Error      string        `json:"error"`
+	Stacktrace string        `json:"stacktrace"`
+	Pid        int           `json:"pid"`
+}
 
 type Level zapcore.Level
 
