@@ -30,9 +30,10 @@ var (
 	logLevel      zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
-	ignoreKeys    []Key
+	omitKeys      []Key
 	isStdOut      bool
 	separator     = " : "
+	pid           int
 )
 
 // Init initializes the logger.
@@ -42,17 +43,18 @@ func Init() {
 			pretty = newPrettyLogger()
 		}
 		zapLogger = newZapLogger()
+		var p string
+		if pid != 0 {
+			p = fmt.Sprintf(", PID: %d", pid)
+		}
 		Debug("INIT_LOGGER", Console(fmt.Sprintf(
-			"Level: %s, Output: %s, FileName: %s",
+			"Level: %s, Output: %s, FileName: %s%s",
 			logLevel.CapitalString(),
 			outputType.String(),
 			fileName,
+			p,
 		)))
 	})
-}
-
-func GetZapLogger() *zap.Logger {
-	return zapLogger
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
@@ -61,7 +63,7 @@ func newZapLogger() *zap.Logger {
 		MessageKey:     string(MessageKey),
 		LevelKey:       string(LevelKey),
 		TimeKey:        string(TimeKey),
-		NameKey:        string(NameKey),
+		NameKey:        string(LoggerKey),
 		CallerKey:      string(CallerKey),
 		FunctionKey:    string(FunctionKey),
 		StacktraceKey:  string(StacktraceKey),
@@ -70,7 +72,7 @@ func newZapLogger() *zap.Logger {
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   getCallerEncoder(),
 	}
-	setIgnoreKeys(&enc)
+	setOmitKeys(&enc)
 
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(enc),
@@ -84,33 +86,37 @@ func newZapLogger() *zap.Logger {
 	).With(getAdditionalFields()...)
 }
 
-func setIgnoreKeys(enc *zapcore.EncoderConfig) {
-	for i := range ignoreKeys {
-		switch ignoreKeys[i] {
+func setOmitKeys(enc *zapcore.EncoderConfig) {
+	for i := range omitKeys {
+		switch omitKeys[i] {
 		case MessageKey:
-			enc.MessageKey = ""
+			enc.MessageKey = zapcore.OmitKey
 		case LevelKey:
-			enc.LevelKey = ""
+			enc.LevelKey = zapcore.OmitKey
 		case TimeKey:
-			enc.TimeKey = ""
-		case NameKey:
-			enc.NameKey = ""
+			enc.TimeKey = zapcore.OmitKey
+		case LoggerKey:
+			enc.NameKey = zapcore.OmitKey
 		case CallerKey:
-			enc.CallerKey = ""
+			enc.CallerKey = zapcore.OmitKey
 		case FunctionKey:
-			enc.FunctionKey = ""
+			enc.FunctionKey = zapcore.OmitKey
 		case StacktraceKey:
-			enc.StacktraceKey = ""
+			enc.StacktraceKey = zapcore.OmitKey
 		}
 	}
 }
 
 func getAdditionalFields() (fields []zapcore.Field) {
-	if !funk.Contains(ignoreKeys, VersionKey) {
-		fields = append(fields, zap.String("version", GetVersion()))
+	if !funk.Contains(omitKeys, VersionKey) {
+		fields = append(fields, zap.String(string(VersionKey), GetVersion()))
 	}
-	if !funk.Contains(ignoreKeys, HostnameKey) {
-		fields = append(fields, zap.String("hostname", *getHost()))
+	if !funk.Contains(omitKeys, HostnameKey) {
+		fields = append(fields, zap.String(string(HostnameKey), *getHost()))
+	}
+	if !funk.Contains(omitKeys, PIDKey) {
+		pid = os.Getpid()
+		fields = append(fields, zap.Int(string(PIDKey), pid))
 	}
 	return fields
 }
@@ -134,11 +140,10 @@ func Sync() {
 	if outputType != PrettyOutput && outputType != FileOutput {
 		return
 	}
-
-	Debug("FLUSH_LOG_BUFFER")
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
+	pretty.printTraces()
 }
 
 // SyncWhenStop flush log buffer. when interrupt or terminated.
@@ -213,7 +218,14 @@ func Cleanup() {
 	logLevel = zapcore.InfoLevel
 	callerEncoder = nil
 	consoleFields = []string{consoleFieldDefault}
-	ignoreKeys = nil
+	omitKeys = nil
 	isStdOut = false
 	separator = " : "
+
+	fileName = ""
+	maxSize = 0
+	maxBackups = 0
+	maxAge = 0
+	localTime = false
+	compress = false
 }

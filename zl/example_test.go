@@ -27,13 +27,12 @@ func Example() {
 	fileName := "./log/example.jsonl"
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
 	zl.SetFileName(fileName)
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	// Write logs
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
@@ -85,13 +84,12 @@ func ExampleSetVersion() {
 	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
 	zl.SetFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey, zl.PIDKey)
 	zl.SetOutput(zl.ConsoleAndFileOutput)
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	// Write logs
 	zl.Info("INFO_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
@@ -101,8 +99,8 @@ func ExampleSetVersion() {
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L97","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L98","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -113,9 +111,10 @@ func ExampleNew() {
 	fileName := "./log/example-new.jsonl"
 	zl.AddConsoleFields(traceIDField)
 	zl.SetLevel(zl.DebugLevel)
-	zl.SetIgnoreKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey)
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetFileName(fileName)
+	traceID := "c7mg6hnr2g4l6vvuao50" // xid.New().String()
 
 	// Initialize
 	zl.Init()
@@ -123,15 +122,15 @@ func ExampleNew() {
 	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
 
 	// New
-	// ex. Use this when you want to add a common value in the scope of a context, such as an API request.
+	// e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 	l1 := zl.New(
 		zap.Int("user_id", 1),
-		zap.Int64(traceIDField, 1642153670000264000),
+		zap.String(traceIDField, traceID),
 	).Named("log1")
 
 	l2 := zl.New(
 		zap.Int("user_id", 1),
-		zap.Int64(traceIDField, 1642153670000264000),
+		zap.String(traceIDField, traceID),
 	).Named("log2")
 
 	// Write logs
@@ -154,7 +153,23 @@ func ExampleNew() {
 	// Output:
 	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
 	// {"level":"INFO","message":"GLOBAL_INFO"}
-	// {"level":"INFO","name":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"ERROR","name":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":1642153670000264000}
-	// {"level":"INFO","name":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":1642153670000264000}
+	// {"level":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"level":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"level":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+}
+
+func ExampleError() {
+	zl.Cleanup() // removes logger and resets settings.
+
+	zl.SetOmitKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey)
+
+	// Initialize
+	zl.Init()
+	defer zl.Sync()   // flush log buffer
+	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+
+	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
+	zl.Info("INFO")
+	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
+	// Output:
 }

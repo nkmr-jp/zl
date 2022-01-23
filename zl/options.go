@@ -7,20 +7,29 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Key is used by each log entry.
+// Key defines a commonly used field name for each log entry
 type Key string
 
 const (
 	MessageKey    Key = "message"
 	LevelKey      Key = "level"
 	TimeKey       Key = "time"
-	NameKey       Key = "name"
+	LoggerKey     Key = "logger"
 	CallerKey     Key = "caller"
 	FunctionKey   Key = "function"
 	StacktraceKey Key = "stacktrace"
 	VersionKey    Key = "version"
 	HostnameKey   Key = "hostname"
+	PIDKey        Key = "pid"
 )
+
+type Trace struct {
+	Level      zapcore.Level `json:"level"`
+	Message    string        `json:"message"`
+	Error      string        `json:"error"`
+	Stacktrace string        `json:"stacktrace"`
+	Pid        int           `json:"pid"`
+}
 
 type Level zapcore.Level
 
@@ -100,9 +109,9 @@ func AddConsoleFields(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 
-// SetIgnoreKeys set ignore fields from default fields that used in each log.
-func SetIgnoreKeys(key ...Key) {
-	ignoreKeys = key
+// SetOmitKeys set ignore fields from default fields that used in each log.
+func SetOmitKeys(key ...Key) {
+	omitKeys = key
 }
 
 // SetStdout is changes the console log output from stderr to stdout.
