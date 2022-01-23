@@ -38,7 +38,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 		return
 	}
 	err := l.Logger.Output(4,
-		l.coloredLevel(level)+" "+l.coloredMsg(nil, msg, level, fields),
+		l.coloredLevel(level)+" "+l.coloredMsg(msg, level, fields),
 	)
 	if err != nil {
 		l.Logger.Fatal(err)
@@ -52,7 +52,6 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 	err2 := l.Logger.Output(
 		4,
 		l.coloredLevel(level)+" "+l.coloredMsg(
-			err,
 			fmt.Sprintf("%s%s%s", msg, separator, aurora.Magenta(err.Error())),
 			level, fields,
 		),
@@ -62,18 +61,18 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 	}
 }
 
-func (l *prettyLogger) coloredMsg(err error, msg string, level zapcore.Level, fields []zap.Field) string {
+func (l *prettyLogger) coloredMsg(msg string, level zapcore.Level, fields []zap.Field) string {
 	var fieldMsg string
 	if level == DebugLevel {
 		msg = aurora.Faint(msg).String()
-		fieldMsg = aurora.Faint(l.consoleMsg(err, fields)).String()
+		fieldMsg = aurora.Faint(l.consoleMsg(fields)).String()
 	} else {
-		fieldMsg = l.consoleMsg(err, fields)
+		fieldMsg = l.consoleMsg(fields)
 	}
 	return fmt.Sprintf("%s%s", msg, fieldMsg)
 }
 
-func (l *prettyLogger) consoleMsg(err error, fields []zap.Field) string {
+func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 	var ret string
 	var consoles []string
 	for i := range fields {
