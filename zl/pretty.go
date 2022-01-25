@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/logrusorgru/aurora"
+	au "github.com/logrusorgru/aurora"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -41,7 +41,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 		return
 	}
 	err := l.Logger.Output(4,
-		l.coloredLevel(level)+" "+l.coloredMsg(msg, level, fields),
+		l.coloredLevel(level).String()+" "+l.coloredMsg(msg, level, fields),
 	)
 	if err != nil {
 		l.Logger.Fatal(err)
@@ -54,8 +54,8 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 	}
 	err2 := l.Logger.Output(
 		4,
-		l.coloredLevel(level)+" "+l.coloredMsg(
-			fmt.Sprintf("%s%s%s", msg, separator, aurora.Magenta(err.Error())),
+		l.coloredLevel(level).String()+" "+l.coloredMsg(
+			fmt.Sprintf("%s%s%s", msg, separator, au.Magenta(err.Error())),
 			level, fields,
 		),
 	)
@@ -67,8 +67,8 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 func (l *prettyLogger) coloredMsg(msg string, level zapcore.Level, fields []zap.Field) string {
 	var fieldMsg string
 	if level == DebugLevel {
-		msg = aurora.Faint(msg).String()
-		fieldMsg = aurora.Faint(l.consoleMsg(fields)).String()
+		msg = au.Faint(msg).String()
+		fieldMsg = au.Faint(l.consoleMsg(fields)).String()
 	} else {
 		fieldMsg = l.consoleMsg(fields)
 	}
@@ -86,7 +86,7 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 			} else {
 				val = strconv.Itoa(int(fields[i].Integer))
 			}
-			consoles = append(consoles, aurora.Cyan(val).String())
+			consoles = append(consoles, au.Cyan(val).String())
 		}
 	}
 	if consoles != nil {
@@ -95,20 +95,20 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 	return ret
 }
 
-func (l *prettyLogger) coloredLevel(level zapcore.Level) string {
+func (l *prettyLogger) coloredLevel(level zapcore.Level) au.Value {
 	switch level {
 	case FatalLevel:
-		return aurora.Red(level.CapitalString()).String()
+		return au.Red(level.CapitalString())
 	case ErrorLevel:
-		return aurora.Red(level.CapitalString()).String()
+		return au.Red(level.CapitalString())
 	case WarnLevel:
-		return aurora.Yellow(level.CapitalString()).String()
+		return au.Yellow(level.CapitalString())
 	case InfoLevel:
-		return aurora.BrightBlue(level.CapitalString()).String()
+		return au.BrightBlue(level.CapitalString())
 	case DebugLevel:
-		return aurora.BrightBlack(level.CapitalString()).String()
+		return au.BrightBlack(level.CapitalString())
 	}
-	return ""
+	return au.BrightBlack("")
 }
 
 func (l *prettyLogger) printTraces() {
@@ -132,7 +132,7 @@ func (l *prettyLogger) printTraces() {
 	count := 0
 	ln := 1
 	for scanner.Scan() {
-		trace := l.buildTrace(ln, scanner)
+		trace := l.buildStackTrace(count, ln, scanner)
 		if trace != "" {
 			count++
 		}
@@ -144,11 +144,11 @@ func (l *prettyLogger) printTraces() {
 		return
 	}
 
-	head := aurora.BgRed(fmt.Sprintf(
-		"                              %v ERROR OCCURRED                              ",
+	head := au.Red(fmt.Sprintf(
+		"\t\t\t\t%v ERROR OCCURRED\t\t\t\t",
 		count,
-	))
-	output := fmt.Sprintf("\n\n\n%s\n\n\n\n%s", head, traces)
+	)).Bold()
+	output := fmt.Sprintf("\n\n\n%s\n\n\n%s", head, traces)
 	if isStdOut {
 		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
 			return
@@ -164,19 +164,25 @@ func (l *prettyLogger) printTraces() {
 	}
 }
 
-func (l *prettyLogger) buildTrace(ln int, scanner *bufio.Scanner) string {
-	var trace Trace
+func (l *prettyLogger) buildStackTrace(count, ln int, scanner *bufio.Scanner) string {
+	var report ErrorReport
 	var output string
-	if err := json.Unmarshal(scanner.Bytes(), &trace); err != nil {
+	if err := json.Unmarshal(scanner.Bytes(), &report); err != nil {
 		return ""
 	}
 	logFile := fmt.Sprintf("%v:%v", filepath.Base(fileName), ln)
-	msg := l.coloredLevel(trace.Level) + " " + l.coloredMsg(
-		fmt.Sprintf("%s%s%s", trace.Message, separator, aurora.Magenta(trace.Error)),
-		trace.Level, nil,
+	msg := l.coloredLevel(report.Level).Bold().String() + " " + l.coloredMsg(
+		fmt.Sprintf("%s%s%s", au.Bold(report.Message), separator, au.Magenta(report.Error)),
+		report.Level, nil,
 	)
-	if trace.Stacktrace != "" && trace.Pid == pid {
-		output = fmt.Sprintf("%v ( %s )\n\n%v\n\n\n\n", msg, logFile, trace.Stacktrace)
+	if report.Stacktrace != "" && report.Pid == pid {
+		output = fmt.Sprintf(
+			"%v %v ( %s )\n\n\t%v\n\n\n",
+			au.Red(fmt.Sprintf("[%d]", count+1)).Bold(),
+			msg,
+			logFile,
+			strings.ReplaceAll(report.Stacktrace, "\n", "\n\t"),
+		)
 	}
 	return output
 }

@@ -23,7 +23,7 @@ const (
 	PIDKey        Key = "pid"
 )
 
-type Trace struct {
+type ErrorReport struct {
 	Level      zapcore.Level `json:"level"`
 	Message    string        `json:"message"`
 	Error      string        `json:"error"`
