@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nkmr-jp/zap-lightning/zl"
+	"github.com/nkmr-jp/zl"
 	"go.uber.org/zap"
 )
 
@@ -28,7 +28,7 @@ func Example() {
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 
 	// Initialize
 	zl.Init()
@@ -59,14 +59,14 @@ func Example() {
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zap-lightning/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DEBUG_MESSAGE"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
 
 func ExampleSetVersion() {
@@ -82,7 +82,7 @@ func ExampleSetVersion() {
 	// Set Options
 	zl.SetVersion(version)
 	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetOmitKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey, zl.PIDKey)
 	zl.SetOutput(zl.ConsoleAndFileOutput)
@@ -109,17 +109,16 @@ func ExampleNew() {
 	// Set options
 	traceIDField := "trace_id"
 	fileName := "./log/example-new.jsonl"
-	zl.AddConsoleFields(traceIDField)
+	zl.SetConsoleFields(traceIDField)
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
 	zl.SetOutput(zl.PrettyOutput)
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 	traceID := "c7mg6hnr2g4l6vvuao50" // xid.New().String()
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	// New
 	// e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
@@ -158,6 +157,23 @@ func ExampleNew() {
 	// {"level":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
 }
 
+func ExampleSetLevelByString() {
+	zl.Cleanup() // removes logger and resets settings.
+
+	zl.SetLevelByString("DEBUG")
+	zl.SetOutputByString("Console")
+	zl.SetStdout()
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
+
+	zl.Init()
+	zl.Debug("DEBUG_MESSAGE")
+	zl.Info("INFO_MESSAGE")
+	// Output:
+	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Console, FileName: "}
+	// {"level":"DEBUG","message":"DEBUG_MESSAGE"}
+	// {"level":"INFO","message":"INFO"}
+}
+
 func ExampleError() {
 	zl.Cleanup() // removes logger and resets settings.
 
@@ -165,8 +181,7 @@ func ExampleError() {
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
 	zl.Info("INFO")
