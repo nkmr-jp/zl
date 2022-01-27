@@ -1,4 +1,4 @@
-package examples_test
+package zl_test
 
 import (
 	"fmt"
