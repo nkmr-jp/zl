@@ -1,24 +1,22 @@
 Refactoring for the release of v1.0
 
-# Zap Lightning
-Zap Lightning  provides [zap](https://github.com/uber-go/zap) based advanced logging features, and it's easy to use.
+# zl :technologist:
+zl provides [zap](https://github.com/uber-go/zap) based advanced logging features, and it's easy to use.
 
 ## Install
 
 ```sh
-go get -u github.com/nkmr-jp/zap-lightning/zl
+go get -u github.com/nkmr-jp/zl
 ```
 
 ```sh
 # If you want to use the latest feature.
-go get -u github.com/nkmr-jp/zap-lightning/zl@develop
+go get -u github.com/nkmr-jp/zl@develop
 ```
 
 ## Usage
 
-See: [example_test.go](./zl/example_test.go)
-
-## How it works
+See: [example_test.go](./example_test.go)
 
 ```sh
 go test ./zl -v
@@ -26,14 +24,14 @@ go test ./zl -v
 
 ### Console. simple log with color
 
-It can select the log output method. see: [options.go](./zl/options.go#L35)
+It can select the log output method. see: [options.go](./options.go)
 
 ![img_1.png](img_1.png)
 
 ### File. json structured log with detail 
 
 ```shell
-cat ./zl/log/example.jsonl
+cat ./log/example.jsonl
 ```
 
 ```json lines
