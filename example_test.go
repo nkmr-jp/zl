@@ -28,7 +28,7 @@ func Example() {
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.PrettyOutput)
 	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 
 	// Initialize
 	zl.Init()
@@ -82,7 +82,7 @@ func ExampleSetVersion() {
 	// Set Options
 	zl.SetVersion(version)
 	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 	zl.SetRepositoryCallerEncoder(urlFormat, version, srcRootDir)
 	zl.SetOmitKeys(zl.TimeKey, zl.FunctionKey, zl.HostnameKey, zl.PIDKey)
 	zl.SetOutput(zl.ConsoleAndFileOutput)
@@ -109,17 +109,16 @@ func ExampleNew() {
 	// Set options
 	traceIDField := "trace_id"
 	fileName := "./log/example-new.jsonl"
-	zl.AddConsoleFields(traceIDField)
+	zl.SetConsoleFields(traceIDField)
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
 	zl.SetOutput(zl.PrettyOutput)
-	zl.SetFileName(fileName)
+	zl.SetRotateFileName(fileName)
 	traceID := "c7mg6hnr2g4l6vvuao50" // xid.New().String()
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	// New
 	// e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
@@ -165,8 +164,7 @@ func ExampleError() {
 
 	// Initialize
 	zl.Init()
-	defer zl.Sync()   // flush log buffer
-	zl.SyncWhenStop() // flush log buffer. when interrupt or terminated.
+	defer zl.Sync() // flush log buffer
 
 	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
 	zl.Info("INFO")

@@ -104,12 +104,12 @@ func SetVersion(revisionOrTag string) {
 	version = revisionOrTag
 }
 
-// AddConsoleFields add the fields to be displayed in the console.
-func AddConsoleFields(fieldKey ...string) {
+// SetConsoleFields add the fields to be displayed in the console.
+func SetConsoleFields(fieldKey ...string) {
 	consoleFields = append(consoleFields, fieldKey...)
 }
 
-// SetOmitKeys set ignore fields from default fields that used in each log.
+// SetOmitKeys set fields to omit from default fields that used in each log.
 func SetOmitKeys(key ...Key) {
 	omitKeys = key
 }
@@ -124,38 +124,38 @@ func SetSeparator(val string) {
 	separator = val
 }
 
-// SetFileName set the file to write logs to.
+// SetRotateFileName set the file to write logs to.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetFileName(val string) {
+func SetRotateFileName(val string) {
 	fileName = val
 }
 
-// SetMaxSize set the maximum size in megabytes of the log file before it gets rotated.
+// SetRotateMaxSize set the maximum size in megabytes of the log file before it gets rotated.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetMaxSize(val int) {
+func SetRotateMaxSize(val int) {
 	maxSize = val
 }
 
-// SetMaxAge set the maximum number of days to retain.
+// SetRotateMaxAge set the maximum number of days to retain.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetMaxAge(val int) {
+func SetRotateMaxAge(val int) {
 	maxAge = val
 }
 
-// SetMaxBackups set the maximum number of old log files to retain.
+// SetRotateMaxBackups set the maximum number of old log files to retain.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetMaxBackups(val int) {
+func SetRotateMaxBackups(val int) {
 	maxBackups = val
 }
 
-// SetLocalTime determines if the time used for formatting the timestamps in backup files is the computer's local time.
+// SetRotateLocalTime determines if the time used for formatting the timestamps in backup files is the computer's local time.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetLocalTime(val bool) {
+func SetRotateLocalTime(val bool) {
 	localTime = val
 }
 
-// SetCompress determines if the rotated log files should be compressed using gzip.
+// SetRotateCompress determines if the rotated log files should be compressed using gzip.
 // See: https://github.com/natefinch/lumberjack#type-logger
-func SetCompress(val bool) {
+func SetRotateCompress(val bool) {
 	compress = val
 }
