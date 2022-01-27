@@ -19,7 +19,7 @@ go get -u github.com/nkmr-jp/zl@develop
 See: [example_test.go](./example_test.go)
 
 ```sh
-go test ./zl -v
+go test -v
 ```
 
 ## Features

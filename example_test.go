@@ -60,13 +60,13 @@ func Example() {
 
 	// Output:
 	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl/examples_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"level":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"level":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"level":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
 
 func ExampleSetVersion() {
@@ -168,10 +168,11 @@ func ExampleSetLevelByString() {
 	zl.Init()
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Info("INFO_MESSAGE")
+
 	// Output:
 	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Console, FileName: "}
 	// {"level":"DEBUG","message":"DEBUG_MESSAGE"}
-	// {"level":"INFO","message":"INFO"}
+	// {"level":"INFO","message":"INFO_MESSAGE"}
 }
 
 func ExampleError() {
