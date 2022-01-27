@@ -157,6 +157,23 @@ func ExampleNew() {
 	// {"level":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
 }
 
+func ExampleSetLevelByString() {
+	zl.Cleanup() // removes logger and resets settings.
+
+	zl.SetLevelByString("DEBUG")
+	zl.SetOutputByString("Console")
+	zl.SetStdout()
+	zl.SetOmitKeys(zl.TimeKey, zl.CallerKey, zl.FunctionKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey)
+
+	zl.Init()
+	zl.Debug("DEBUG_MESSAGE")
+	zl.Info("INFO_MESSAGE")
+	// Output:
+	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Console, FileName: "}
+	// {"level":"DEBUG","message":"DEBUG_MESSAGE"}
+	// {"level":"INFO","message":"INFO"}
+}
+
 func ExampleError() {
 	zl.Cleanup() // removes logger and resets settings.
 
