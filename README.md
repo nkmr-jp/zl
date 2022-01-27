@@ -26,7 +26,7 @@ go test ./zl -v
 
 It can select the log output method. see: [options.go](./options.go)
 
-![img_1.png](img_1.png)
+![img_1.png](_example/img_1.png)
 
 ### File. json structured log with detail 
 
