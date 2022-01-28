@@ -118,7 +118,7 @@ func (l *prettyLogger) printTraces() {
 
 	fp, err := os.Open(fileName)
 	if err != nil {
-		l.Logger.Fatal(err)
+		return
 	}
 	defer func(fp *os.File) {
 		err := fp.Close()
