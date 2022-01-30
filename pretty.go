@@ -37,7 +37,7 @@ func newPrettyLogger() *prettyLogger {
 }
 
 func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) {
-	if outputType != PrettyOutput {
+	if outputType != PrettyOutput && level < logLevel {
 		return
 	}
 	err := l.Logger.Output(4,
@@ -49,7 +49,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 }
 
 func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, fields []zap.Field) {
-	if outputType != PrettyOutput {
+	if outputType != PrettyOutput && level < logLevel {
 		return
 	}
 	err2 := l.Logger.Output(
