@@ -1,5 +1,3 @@
-Refactoring for the release of v1.0
-
 # zl :technologist:
 zl provides [zap](https://github.com/uber-go/zap) based advanced logging features, and it's easy to use.
 
