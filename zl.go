@@ -27,7 +27,7 @@ var (
 	zapLogger     *zap.Logger
 	outputType    Output
 	version       string
-	logLevel      zapcore.Level // Default is InfoLevel
+	severityLevel zapcore.Level // Default is InfoLevel
 	callerEncoder zapcore.CallerEncoder
 	consoleFields = []string{consoleFieldDefault}
 	omitKeys      []Key
@@ -48,8 +48,8 @@ func Init() {
 			p = fmt.Sprintf(", PID: %d", pid)
 		}
 		Debug("INIT_LOGGER", Console(fmt.Sprintf(
-			"Level: %s, Output: %s, FileName: %s%s",
-			logLevel.CapitalString(),
+			"Severity: %s, Output: %s, FileName: %s%s",
+			severityLevel.CapitalString(),
 			outputType.String(),
 			fileName,
 			p,
@@ -77,7 +77,7 @@ func newZapLogger() *zap.Logger {
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(enc),
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
-		logLevel,
+		severityLevel,
 	)
 	return zap.New(core,
 		zap.AddCallerSkip(1),
@@ -215,7 +215,7 @@ func Cleanup() {
 	zapLogger = nil
 	outputType = PrettyOutput
 	version = ""
-	logLevel = zapcore.InfoLevel
+	severityLevel = zapcore.InfoLevel
 	callerEncoder = nil
 	consoleFields = []string{consoleFieldDefault}
 	omitKeys = nil

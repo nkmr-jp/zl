@@ -48,7 +48,7 @@ func Example() {
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:44: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl
+	// zl.go:44: DEBUG INIT_LOGGER: Severity: DEBUG, Output: Pretty, FileName: ./log/example.jsonl
 	// example_test.go:39: INFO USER_INFO
 	// example_test.go:41: ERROR ERROR_MESSAGE: error message
 	// example_test.go:42: DEBUG DEBUG_MESSAGE
@@ -59,14 +59,14 @@ func Example() {
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"level":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"level":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
-	// {"level":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
-	// {"level":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
+	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
 
 func ExampleSetVersion() {
@@ -99,8 +99,8 @@ func ExampleSetVersion() {
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"level":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"level":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -142,7 +142,7 @@ func ExampleNew() {
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:44: DEBUG INIT_LOGGER: Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl
+	// zl.go:44: DEBUG INIT_LOGGER: Severity: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl
 	// example_test.go:135: INFO GLOBAL_INFO
 	// log1 | example_test.go:136: INFO CONTEXT_SCOPE_INFO: some message to console: test, 1642153670000264000
 	// log1 | example_test.go:137: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
@@ -150,11 +150,11 @@ func ExampleNew() {
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
-	// {"level":"INFO","message":"GLOBAL_INFO"}
-	// {"level":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
-	// {"level":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
-	// {"level":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
+	// {"severity":"INFO","message":"GLOBAL_INFO"}
+	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
 }
 
 func ExampleSetLevelByString() {
@@ -170,9 +170,9 @@ func ExampleSetLevelByString() {
 	zl.Info("INFO_MESSAGE")
 
 	// Output:
-	// {"level":"DEBUG","message":"INIT_LOGGER","console":"Level: DEBUG, Output: Console, FileName: "}
-	// {"level":"DEBUG","message":"DEBUG_MESSAGE"}
-	// {"level":"INFO","message":"INFO_MESSAGE"}
+	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Console, FileName: "}
+	// {"severity":"DEBUG","message":"DEBUG_MESSAGE"}
+	// {"severity":"INFO","message":"INFO_MESSAGE"}
 }
 
 func ExampleError() {

@@ -37,7 +37,7 @@ func newPrettyLogger() *prettyLogger {
 }
 
 func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) {
-	if outputType != PrettyOutput || level < logLevel {
+	if outputType != PrettyOutput || level < severityLevel {
 		return
 	}
 	err := l.Logger.Output(4,
@@ -49,7 +49,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 }
 
 func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, fields []zap.Field) {
-	if outputType != PrettyOutput || level < logLevel {
+	if outputType != PrettyOutput || level < severityLevel {
 		return
 	}
 	err2 := l.Logger.Output(
@@ -171,9 +171,9 @@ func (l *prettyLogger) buildStackTrace(count, ln int, scanner *bufio.Scanner) st
 		return ""
 	}
 	logFile := fmt.Sprintf("%v:%v", filepath.Base(fileName), ln)
-	msg := l.coloredLevel(report.Level).Bold().String() + " " + l.coloredMsg(
+	msg := l.coloredLevel(report.Severity).Bold().String() + " " + l.coloredMsg(
 		fmt.Sprintf("%s%s%s", au.Bold(report.Message), separator, au.Magenta(report.Error)),
-		report.Level, nil,
+		report.Severity, nil,
 	)
 	if report.Stacktrace != "" && report.Pid == pid {
 		output = fmt.Sprintf(

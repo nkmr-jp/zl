@@ -11,10 +11,11 @@ import (
 // Key defines a commonly used field name for each log entry
 type Key string
 
+// See: https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 const (
 	MessageKey    Key = "message"
-	LevelKey      Key = "level"
-	TimeKey       Key = "time"
+	LevelKey      Key = "severity"
+	TimeKey       Key = "timestamp"
 	LoggerKey     Key = "logger"
 	CallerKey     Key = "caller"
 	FunctionKey   Key = "function"
@@ -25,13 +26,14 @@ const (
 )
 
 type ErrorReport struct {
-	Level      zapcore.Level `json:"level"`
+	Severity   zapcore.Level `json:"severity"`
 	Message    string        `json:"message"`
 	Error      string        `json:"error"`
 	Stacktrace string        `json:"stacktrace"`
 	Pid        int           `json:"pid"`
 }
 
+//
 type Level zapcore.Level
 
 const (
@@ -99,7 +101,7 @@ func SetOutputByString(outputTypeStr string) {
 }
 
 func SetLevel(option zapcore.Level) {
-	logLevel = option
+	severityLevel = option
 }
 
 // SetLevelByString is set log level. levelStr can use (DEBUG,INFO,WARN,ERROR,FATAL).
