@@ -16,6 +16,6 @@ func main() {
 
 	// Write logs
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
-	zl.Warn("WARN_MESSAGE")
+	zl.Warning("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
 }

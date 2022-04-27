@@ -39,8 +39,8 @@ func Example() {
 	err := fmt.Errorf("error message")
 	zl.Error("ERROR_MESSAGE", err) // error level log must with error message.
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Warn("WARN_MESSAGE", zap.Error(err))    // warn level log with error message.
-	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
+	zl.Warning("WARN_MESSAGE", zap.Error(err))    // warn level log with error message.
+	zl.WarningErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("display to console when output type is pretty"))
 	zl.DebugErr("DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE", err, zl.Console("display to console when output type is pretty")) // same to above.
 
@@ -63,8 +63,8 @@ func Example() {
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
 	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
+	// {"severity":"WARNING","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
+	// {"severity":"WARNING","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
 }
@@ -93,21 +93,21 @@ func ExampleSetVersion() {
 
 	// Write logs
 	zl.Info("INFO_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
-	zl.Warn("WARN_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
+	zl.Warning("WARN_MESSAGE", zap.String("detail", "detail info xxxxxxxxxxxxxxxxx"))
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output:
 	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L95","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARNING","caller":"https://github.com/nkmr-jp/zap-lightning/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
 	zl.Cleanup() // removes logger and resets settings.
 
 	// Set options
-	traceIDField := "trace_id"
+	traceIDField := "trace"
 	fileName := "./log/example-new.jsonl"
 	zl.SetConsoleFields(traceIDField)
 	zl.SetLevel(zl.DebugLevel)
@@ -152,9 +152,9 @@ func ExampleNew() {
 	// Output:
 	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
 	// {"severity":"INFO","message":"GLOBAL_INFO"}
-	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace_id":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 }
 
 func ExampleSetLevelByString() {

@@ -40,7 +40,7 @@ func (l *zlLogger) Info(message string, fields ...zap.Field) {
 	l.logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) Warn(message string, fields ...zap.Field) {
+func (l *zlLogger) Warning(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, WarnLevel, fields).Warn(message, fields...)
 }
@@ -50,7 +50,7 @@ func (l *zlLogger) Error(message string, err error, fields ...zap.Field) {
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
-func (l *zlLogger) Fatal(message string, err error, fields ...zap.Field) {
+func (l *zlLogger) Critical(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
 }
@@ -65,7 +65,7 @@ func (l *zlLogger) InfoErr(message string, err error, fields ...zap.Field) {
 	l.loggerErr(message, InfoLevel, err, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) WarnErr(message string, err error, fields ...zap.Field) {
+func (l *zlLogger) WarningErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, WarnLevel, err, fields).Warn(message, fields...)
 }
@@ -90,8 +90,8 @@ func Info(message string, fields ...zap.Field) {
 	logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
-// Warn is wrapper of Zap's Warn.
-func Warn(message string, fields ...zap.Field) {
+// Warning is wrapper of Zap's Warn. (note: severityLevel is WARNING)
+func Warning(message string, fields ...zap.Field) {
 	logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
@@ -100,24 +100,24 @@ func Error(message string, err error, fields ...zap.Field) {
 	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
 }
 
-// Fatal is wrapper of Zap's Fatal.
-func Fatal(message string, err error, fields ...zap.Field) {
+// Critical is wrapper of Zap's Fatal. (note: severityLevel is CRITICAL)
+func Critical(message string, err error, fields ...zap.Field) {
 	loggerErr(message, FatalLevel, err, fields).Fatal(message, append(fields, zap.Error(err))...)
 }
 
-// DebugErr is Outputs a Debug log with error field.
+// DebugErr is Outputs a DEBUG log with error field.
 func DebugErr(message string, err error, fields ...zap.Field) {
 	loggerErr(message, DebugLevel, err, fields).Debug(message, append(fields, zap.Error(err))...)
 }
 
-// InfoErr is Outputs a Info log with error field.
+// InfoErr is Outputs INFO log with error field.
 func InfoErr(message string, err error, fields ...zap.Field) {
 	err.Error()
 	loggerErr(message, InfoLevel, err, fields).Info(message, append(fields, zap.Error(err))...)
 }
 
-// WarnErr is Outputs a Warn log with error field.
-func WarnErr(message string, err error, fields ...zap.Field) {
+// WarningErr is Outputs WARNING log with error field.
+func WarningErr(message string, err error, fields ...zap.Field) {
 	loggerErr(message, WarnLevel, err, fields).Warn(message, append(fields, zap.Error(err))...)
 }
 
