@@ -24,9 +24,10 @@ func init() {
 func helloGet(w http.ResponseWriter, r *http.Request) {
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
 	err := fmt.Errorf("error message")
-	zl.Error("ERROR_MESSAGE", err) // error level log must with error message.
+	zl.Error("ERROR_MESSAGE", err)
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Warning("WARN_MESSAGE", zap.Error(err)) // warn level log with error message.
+	zl.Warn("WARN_MESSAGE", zap.Error(err)) // note: WARNING LEVEL in Google Cloud Logging
+	zl.Fatal("FATAL_MESSAGE", err)          // note: CRITICAL LEVEL in Google Cloud Logging
 
 	fmt.Fprint(w, "Hello, World!")
 }

@@ -67,7 +67,7 @@ func newZapLogger() *zap.Logger {
 		CallerKey:      string(CallerKey),
 		FunctionKey:    string(FunctionKey),
 		StacktraceKey:  string(StacktraceKey),
-		EncodeLevel:    encodeLevel,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   getCallerEncoder(),
@@ -84,20 +84,6 @@ func newZapLogger() *zap.Logger {
 		zap.AddCaller(),
 		zap.AddStacktrace(zapcore.ErrorLevel),
 	).With(getAdditionalFields()...)
-}
-
-func encodeLevel(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-	// See:
-	// https://docs.python.org/3/library/logging.html#logging-levels
-	// https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
-	severityLevelStrings := map[zapcore.Level]string{
-		zapcore.DebugLevel: "DEBUG",
-		zapcore.InfoLevel:  "INFO",
-		zapcore.WarnLevel:  "WARNING",
-		zapcore.ErrorLevel: "ERROR",
-		zapcore.FatalLevel: "CRITICAL",
-	}
-	enc.AppendString(severityLevelStrings[l])
 }
 
 func setOmitKeys(enc *zapcore.EncoderConfig) {
