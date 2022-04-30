@@ -40,3 +40,22 @@ open functions detail in google cloud console.
 ```sh
 make open
 ```
+
+## Severity Level
+
+In google cloud logging, warn is converted to warning and fatal is converted to critical.
+
+See: https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logseverity
+
+
+| zl    | google cloud logging | description                                                 |
+|-------|----------------------|-------------------------------------------------------------|
+| DEBUG | DEBUG                | Debug or trace information.                                 |
+| INFO  | INFO                 | Routine information, such as ongoing status or performance. |
+| WARN  | WARNING              | Warning events might cause problems.                        |
+| ERROR | ERROR                | Error events are likely to cause problems.                  |
+| FATAL | CRITICAL             | Critical events cause more severe problems or outages.      |
+
+
+
+![img.png](img.png)
