@@ -58,4 +58,4 @@ See: https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logseve
 
 
 
-![img.png](img.png)
+![img.png](https://user-images.githubusercontent.com/8490118/167234315-f5354349-74c8-47a3-84fc-9fa97fdcf940.png)
