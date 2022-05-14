@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	au "github.com/logrusorgru/aurora"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
@@ -148,7 +149,7 @@ func (l *prettyLogger) printTraces() {
 		"\t\t\t\t%v ERROR OCCURRED\t\t\t\t",
 		count,
 	)).Bold()
-	output := fmt.Sprintf("\n\n\n%s\n\n\n%s", head, traces)
+	output := fmt.Sprintf("\n%s\n\n%s", head, traces)
 	if isStdOut {
 		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
 			return
@@ -177,7 +178,7 @@ func (l *prettyLogger) buildStackTrace(count, ln int, scanner *bufio.Scanner) st
 	)
 	if report.Stacktrace != "" && report.Pid == pid {
 		output = fmt.Sprintf(
-			"%v %v ( %s )\n\n\t%v\n\n\n",
+			"%v %v ( %s )\n\n\t%v\n\n",
 			au.Red(fmt.Sprintf("[%d]", count+1)).Bold(),
 			msg,
 			logFile,
@@ -185,4 +186,16 @@ func (l *prettyLogger) buildStackTrace(count, ln int, scanner *bufio.Scanner) st
 		)
 	}
 	return output
+}
+
+func (l *prettyLogger) dump(a ...interface{}) {
+	if outputType != PrettyOutput {
+		return
+	}
+	err := l.Logger.Output(3,
+		au.Red("DUMP").Bold().String()+" "+spew.Sdump(a...),
+	)
+	if err != nil {
+		l.Logger.Fatal(err)
+	}
 }

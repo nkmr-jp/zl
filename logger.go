@@ -121,6 +121,16 @@ func WarnErr(message string, err error, fields ...zap.Field) {
 	loggerErr(message, WarnLevel, err, fields).Warn(message, append(fields, zap.Error(err))...)
 }
 
+// Dump is a deep pretty printer for Go data structures to aid in debugging.
+// It is only works with PrettyOutput settings.
+//
+// It is wrapper of go-spew.
+// See: https://github.com/davecgh/go-spew
+func Dump(a ...interface{}) {
+	checkInit()
+	pretty.dump(a...)
+}
+
 func logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	checkInit()
 	pretty.log(message, level, fields)
