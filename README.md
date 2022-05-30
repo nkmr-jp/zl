@@ -1,5 +1,6 @@
 # zl :technologist:
 zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
+
 Its design focuses on the developer experience and is easy to use. 
 
 # Features
@@ -7,9 +8,10 @@ Its design focuses on the developer experience and is easy to use.
 ### PrettyOutput (Default) :technologist: 
 - High Developer Experience.
 - The optimal setting for a development environment.
-- Simple colored log to console.
-- Detail JSON log to logfile.
+- Output colored simple logs to the console.
+- Output detail JSON logs to logfile.
 - Very easy-to-read error reports and stack trace.
+- It can jumps directly to the line of the file that is output to the console log (when using Goland or VSCode).
 
 ### ConsoleOutput :zap:
 - High Performance.
@@ -21,6 +23,12 @@ Its design focuses on the developer experience and is easy to use.
 - The optimal setting for a production environment.
 - Especially suitable for on-premises environments.
 - Support logfile rotation.
+
+### ConsoleAndFileOutput
+- It is a setting for the development environment.
+- Output detail JSON logs to console and logfile.
+- It is recommended to use with [jq](https://stedolan.github.io/jq/) to avoid drowning in a sea of information.
+- It is recommended to set PrettyOutput instead.
 
 
 # Installation
