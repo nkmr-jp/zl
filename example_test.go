@@ -138,21 +138,33 @@ func ExampleNew() {
 	).Named("log2")
 
 	// Write logs
+	err := fmt.Errorf("error")
 	zl.Info("GLOBAL_INFO")
 	l1.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
 	l1.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
 	l2.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
+	l2.Debug("TEST")
+	l2.Warn("TEST")
+	l2.Error("TEST", err)
+	l2.InfoErr("TEST", err)
+	l2.DebugErr("TEST", err)
+	l2.WarnErr("TEST", err)
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:44: DEBUG INIT_LOGGER: Severity: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl
-	// example_test.go:135: INFO GLOBAL_INFO
-	// log1 | example_test.go:136: INFO CONTEXT_SCOPE_INFO: some message to console: test, 1642153670000264000
-	// log1 | example_test.go:137: ERROR CONTEXT_SCOPE_ERROR: context scope error message : 1642153670000264000
-	// log2 | example_test.go:138: INFO CONTEXT_SCOPE_INFO2: some message to console: test, 1642153670000264000
-	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
+	// zl.go:69: DEBUG INIT_LOGGER : Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl
+	// example_test.go:142: INFO GLOBAL_INFO
+	// log1 | example_test.go:143: INFO CONTEXT_SCOPE_INFO : some message to console: test : c7mg6hnr2g4l6vvuao50
+	// log1 | example_test.go:144: ERROR CONTEXT_SCOPE_ERROR : context scope error message : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:145: INFO CONTEXT_SCOPE_INFO2 : some message to console: test : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:146: DEBUG TEST : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:147: WARN TEST : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:148: ERROR TEST : error : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:149: INFO TEST : error : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:150: DEBUG TEST : error : c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:151: WARN TEST : error : c7mg6hnr2g4l6vvuao50
 
 	// Output:
 	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl"}
@@ -160,6 +172,12 @@ func ExampleNew() {
 	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"DEBUG","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"DEBUG","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"WARN","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 }
 
 func ExampleSetLevelByString() {
@@ -182,7 +200,6 @@ func ExampleSetLevelByString() {
 
 func ExampleError() {
 	zl.Cleanup() // removes logger and resets settings.
-
 	zl.SetOmitKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey)
 
 	// Initialize
@@ -191,15 +208,16 @@ func ExampleError() {
 
 	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
 	zl.Info("INFO")
+	zl.InfoErr("INFO_ERR", fmt.Errorf("error"))
 	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
 	// Output:
 }
 
 func ExampleSetRotateMaxSize() {
-	fileName := "./log/example-SetRotateMaxSize.jsonl"
+	zl.Cleanup() // removes logger and resets settings.
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetOutput(zl.FileOutput)
-	zl.SetRotateFileName(fileName)
+	zl.SetRotateFileName("./log/example-SetRotateMaxSize.jsonl")
 	zl.SetRotateMaxSize(100)
 	zl.SetRotateMaxAge(7)
 	zl.SetRotateMaxBackups(3)
@@ -210,5 +228,26 @@ func ExampleSetRotateMaxSize() {
 	zl.Init()
 	defer zl.Sync() // flush log buffer
 
+	// Output:
+}
+
+func ExampleDump() {
+	zl.Cleanup() // removes logger and resets settings.
+	zl.SetLevel(zl.DebugLevel)
+	zl.SetRotateFileName("./log/example-Dump.jsonl")
+	zl.Init()
+	defer zl.Sync() // flush log buffer
+	zl.Dump("test")
+	// Output:
+}
+
+func ExampleSyncWhenStop() {
+	zl.Cleanup() // removes logger and resets settings.
+	zl.SetLevel(zl.DebugLevel)
+	zl.SetRotateFileName("./log/example-Dump.jsonl")
+	zl.Init()
+	defer zl.Sync()
+	zl.SyncWhenStop()
+	zl.Dump("test")
 	// Output:
 }
