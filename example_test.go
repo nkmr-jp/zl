@@ -255,6 +255,8 @@ func ExampleSyncWhenStop() {
 func ExampleOthers() {
 	zl.Cleanup()
 	zl.SetLevel(zl.DebugLevel)
+	zl.SetOmitKeys(zl.MessageKey, zl.LevelKey, zl.LoggerKey)
+	zl.GetVersion()
 	zl.SetOutputByString("")
 	zl.SetRepositoryCallerEncoder("", "", "")
 	zl.SetSeparator(" --- ")

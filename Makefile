@@ -37,11 +37,12 @@ doc:
 	@godoc -http=:6060
 
 test: cover
-	open cover.html
+	open coverage.html
 
+# See: https://about.codecov.io/blog/getting-started-with-code-coverage-for-golang/
 cover:
-	go test . -coverprofile=cover.out
-	go tool cover -html=cover.out -o cover.html
+	go test -race -covermode=atomic -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
 
 lint:
 	golangci-lint run --fix

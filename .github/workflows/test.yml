@@ -1,4 +1,5 @@
 # See: https://docs.github.com/ja/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+# See: https://about.codecov.io/blog/getting-started-with-code-coverage-for-golang/
 name: test
 on:
   push:
@@ -21,5 +22,5 @@ jobs:
           go-version: '1.17'
       - name: Test
         run: make cover
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
