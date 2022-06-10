@@ -248,6 +248,19 @@ func ExampleSyncWhenStop() {
 	zl.Init()
 	defer zl.Sync()
 	zl.SyncWhenStop()
-	zl.Dump("test")
+	zl.Info("TEST")
+	// Output:
+}
+
+func ExampleOther() {
+	zl.Cleanup()
+	zl.SetLevel(zl.DebugLevel)
+	zl.SetRotateFileName("./log/example-Dump.jsonl")
+	zl.Init()
+	defer zl.Sync()
+	zl.SetOutputByString("")
+	zl.SetRepositoryCallerEncoder("", "", "")
+	zl.SetSeparator(" --- ")
+	zl.InfoErr("TEST", fmt.Errorf("error"))
 	// Output:
 }
