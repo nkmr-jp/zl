@@ -112,7 +112,6 @@ func DebugErr(message string, err error, fields ...zap.Field) {
 
 // InfoErr is Outputs INFO log with error field.
 func InfoErr(message string, err error, fields ...zap.Field) {
-	err.Error()
 	loggerErr(message, InfoLevel, err, fields).Info(message, append(fields, zap.Error(err))...)
 }
 

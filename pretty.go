@@ -91,7 +91,7 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 		}
 	}
 	if consoles != nil {
-		ret = separator + fmt.Sprintf("%s", strings.Join(consoles, separator))
+		ret = separator + strings.Join(consoles, separator)
 	}
 	return ret
 }
@@ -112,7 +112,7 @@ func (l *prettyLogger) coloredLevel(level zapcore.Level) au.Value {
 	return au.BrightBlack("")
 }
 
-func (l *prettyLogger) printTraces() {
+func (l *prettyLogger) showErrorReport() {
 	if funk.Contains(omitKeys, StacktraceKey) && funk.Contains(omitKeys, PIDKey) {
 		return
 	}
@@ -128,12 +128,17 @@ func (l *prettyLogger) printTraces() {
 		}
 	}(fp)
 
+	count, traces := l.scanStackTraces(fp)
+	l.printTraces(count, traces)
+}
+
+func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	scanner := bufio.NewScanner(fp)
 	var traces string
 	count := 0
 	ln := 1
 	for scanner.Scan() {
-		trace := l.buildStackTrace(count, ln, scanner)
+		trace := l.fmtStackTrace(count, ln, scanner)
 		if trace != "" {
 			count++
 		}
@@ -141,10 +146,16 @@ func (l *prettyLogger) printTraces() {
 		ln++
 	}
 
+	if err := scanner.Err(); err != nil {
+		l.Logger.Fatal(err)
+	}
+	return count, traces
+}
+
+func (l *prettyLogger) printTraces(count int, traces string) {
 	if count == 0 {
 		return
 	}
-
 	head := au.Red(fmt.Sprintf(
 		"\t\t\t\t%v ERROR OCCURRED\t\t\t\t",
 		count,
@@ -159,13 +170,9 @@ func (l *prettyLogger) printTraces() {
 			return
 		}
 	}
-
-	if err = scanner.Err(); err != nil {
-		l.Logger.Fatal(err)
-	}
 }
 
-func (l *prettyLogger) buildStackTrace(count, ln int, scanner *bufio.Scanner) string {
+func (l *prettyLogger) fmtStackTrace(count, ln int, scanner *bufio.Scanner) string {
 	var report ErrorReport
 	var output string
 	if err := json.Unmarshal(scanner.Bytes(), &report); err != nil {
