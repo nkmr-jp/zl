@@ -66,7 +66,7 @@ func Init() {
 			f,
 			p,
 		)
-		internal("INIT_LOGGER", Console(c))
+		iDebug("INIT_LOGGER", Console(c))
 	})
 }
 
@@ -182,7 +182,7 @@ func SyncWhenStop() {
 			sigCode = 15
 		}
 
-		internal(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		iDebug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
 		Sync() // flush log buffer
 		os.Exit(128 + sigCode)
 	}()

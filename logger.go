@@ -136,10 +136,14 @@ func logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger
 	return zapLogger
 }
 
-func internal(message string, fields ...zap.Field) {
+func iDebug(message string, fields ...zap.Field) {
+	iLogger(message, DebugLevel, fields).Debug(message, fields...)
+}
+
+func iLogger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	checkInit()
-	pretty.log(message, DebugLevel, fields)
-	internalLogger.Debug(message, fields...)
+	pretty.log(message, level, fields)
+	return internalLogger
 }
 
 func loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {

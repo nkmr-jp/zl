@@ -75,7 +75,7 @@ func ExampleSetVersion() {
 	urlFormat := "https://github.com/nkmr-jp/zl/blob/%s"
 
 	// Actually, it is recommended to pass the value from the command line of go.
-	// ex. `go run -ldflags "-X main.version=v0.1.1 -X main.srcRootDir=$PWD" main.go`.
+	// ex. `go run -ldflags "-X main.version=v1.0.0 -X main.srcRootDir=$PWD" main.go`.
 	version = "v1.0.0"
 	srcRootDir, _ = os.Getwd()
 
