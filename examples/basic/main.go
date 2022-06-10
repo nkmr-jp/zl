@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Set Options
 	zl.SetLevel(zl.DebugLevel)
 
