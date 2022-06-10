@@ -59,7 +59,7 @@ func Example() {
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, FileName: ./log/example.jsonl"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
 	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
@@ -80,6 +80,7 @@ func ExampleSetVersion() {
 	srcRootDir, _ = os.Getwd()
 
 	// Set Options
+	zl.SetLevel(zl.DebugLevel)
 	zl.SetVersion(version)
 	fileName := fmt.Sprintf("./log/example-set-version_%s.jsonl", zl.GetVersion())
 	zl.SetRotateFileName(fileName)
@@ -99,8 +100,9 @@ func ExampleSetVersion() {
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L95","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L96","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"DEBUG","caller":"zl/zl.go:69","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L96","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L97","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -150,7 +152,7 @@ func ExampleNew() {
 	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
 
 	// Output:
-	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, FileName: ./log/example-new.jsonl"}
+	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl"}
 	// {"severity":"INFO","message":"GLOBAL_INFO"}
 	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
@@ -170,7 +172,7 @@ func ExampleSetLevelByString() {
 	zl.Info("INFO_MESSAGE")
 
 	// Output:
-	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Console, FileName: "}
+	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Console"}
 	// {"severity":"DEBUG","message":"DEBUG_MESSAGE"}
 	// {"severity":"INFO","message":"INFO_MESSAGE"}
 }

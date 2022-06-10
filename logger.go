@@ -19,7 +19,7 @@ type zlLogger struct {
 func New(fields ...zap.Field) *zlLogger {
 	return &zlLogger{
 		pretty:    newPrettyLogger(),
-		zapLogger: newZapLogger(),
+		zapLogger: newLogger(encoderConfig),
 		fields:    fields,
 	}
 }
@@ -135,6 +135,12 @@ func logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger
 	checkInit()
 	pretty.log(message, level, fields)
 	return zapLogger
+}
+
+func internal(message string, fields ...zap.Field) {
+	checkInit()
+	pretty.log(message, DebugLevel, fields)
+	internalLogger.Debug(message, fields...)
 }
 
 func loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {

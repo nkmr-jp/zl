@@ -22,18 +22,20 @@ const (
 )
 
 var (
-	once          sync.Once
-	pretty        *prettyLogger
-	zapLogger     *zap.Logger
-	outputType    Output
-	version       string
-	severityLevel zapcore.Level // Default is InfoLevel
-	callerEncoder zapcore.CallerEncoder
-	consoleFields = []string{consoleFieldDefault}
-	omitKeys      []Key
-	isStdOut      bool
-	separator     = " : "
-	pid           int
+	once           sync.Once
+	pretty         *prettyLogger
+	zapLogger      *zap.Logger
+	encoderConfig  *zapcore.EncoderConfig
+	internalLogger *zap.Logger
+	outputType     Output
+	version        string
+	severityLevel  zapcore.Level // Default is InfoLevel
+	callerEncoder  zapcore.CallerEncoder
+	consoleFields  = []string{consoleFieldDefault}
+	omitKeys       []Key
+	isStdOut       bool
+	separator      = " : "
+	pid            int
 )
 
 // Init initializes the logger.
@@ -42,23 +44,33 @@ func Init() {
 		if outputType == PrettyOutput {
 			pretty = newPrettyLogger()
 		}
-		zapLogger = newZapLogger()
-		var p string
+
+		encoderConfig = newEncoderConfig()
+		zapLogger = newLogger(encoderConfig)
+		encInternal := newEncoderConfig()
+		encInternal.EncodeCaller = zapcore.ShortCallerEncoder
+		internalLogger = newLogger(encInternal)
+
+		var p, f string
 		if pid != 0 {
 			p = fmt.Sprintf(", PID: %d", pid)
 		}
-		Debug("INIT_LOGGER", Console(fmt.Sprintf(
-			"Severity: %s, Output: %s, FileName: %s%s",
+		if outputType == PrettyOutput || outputType == ConsoleAndFileOutput {
+			f = fmt.Sprintf(", File: %s", fileName)
+		}
+
+		c := fmt.Sprintf(
+			"Severity: %s, Output: %s%s%s",
 			severityLevel.CapitalString(),
 			outputType.String(),
-			fileName,
+			f,
 			p,
-		)))
+		)
+		internal("INIT_LOGGER", Console(c))
 	})
 }
 
-// See https://pkg.go.dev/go.uber.org/zap
-func newZapLogger() *zap.Logger {
+func newEncoderConfig() *zapcore.EncoderConfig {
 	enc := zapcore.EncoderConfig{
 		MessageKey:     string(MessageKey),
 		LevelKey:       string(LevelKey),
@@ -73,9 +85,13 @@ func newZapLogger() *zap.Logger {
 		EncodeCaller:   getCallerEncoder(),
 	}
 	setOmitKeys(&enc)
+	return &enc
+}
 
+// See https://pkg.go.dev/go.uber.org/zap
+func newLogger(enc *zapcore.EncoderConfig) *zap.Logger {
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(enc),
+		zapcore.NewJSONEncoder(*enc),
 		zapcore.NewMultiWriteSyncer(getSyncers()...),
 		severityLevel,
 	)
@@ -166,7 +182,7 @@ func SyncWhenStop() {
 			sigCode = 15
 		}
 
-		Debug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
+		internal(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
 		Sync() // flush log buffer
 		os.Exit(128 + sigCode)
 	}()
@@ -213,6 +229,8 @@ func Cleanup() {
 	once = sync.Once{}
 	pretty = nil
 	zapLogger = nil
+	encoderConfig = nil
+	internalLogger = nil
 	outputType = PrettyOutput
 	version = ""
 	severityLevel = zapcore.InfoLevel
