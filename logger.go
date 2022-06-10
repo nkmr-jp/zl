@@ -25,7 +25,9 @@ func New(fields ...zap.Field) *zlLogger {
 }
 
 func (l *zlLogger) Named(loggerName string) *zlLogger {
-	l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
+	if l.pretty != nil {
+		l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
+	}
 	l.zapLogger = l.zapLogger.Named(loggerName)
 	return l
 }
@@ -71,12 +73,16 @@ func (l *zlLogger) WarnErr(message string, err error, fields ...zap.Field) {
 }
 
 func (l *zlLogger) logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
-	l.pretty.log(message, level, fields)
+	if l.pretty != nil {
+		l.pretty.log(message, level, fields)
+	}
 	return l.zapLogger
 }
 
 func (l *zlLogger) loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
-	l.pretty.logWithError(message, level, err, fields)
+	if l.pretty != nil {
+		l.pretty.logWithError(message, level, err, fields)
+	}
 	return l.zapLogger
 }
 
