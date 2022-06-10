@@ -1,4 +1,8 @@
 # zl :technologist:
+[![Go Reference](https://pkg.go.dev/badge/github.com/nkmr-jp/zl.svg)](https://pkg.go.dev/github.com/nkmr-jp/zl)
+[![test](https://github.com/nkmr-jp/zl/actions/workflows/test.yml/badge.svg)](https://github.com/nkmr-jp/zl/actions/workflows/test.yml)
+[![golangci-lint](https://github.com/nkmr-jp/zl/actions/workflows/lint.yml/badge.svg)](https://github.com/nkmr-jp/zl/actions/workflows/lint.yml)
+
 zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
 
 Its design focuses on the developer experience and is easy to use. 
