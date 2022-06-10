@@ -70,6 +70,23 @@ func main() {
 }
 ```
 
+```sh
+$ cat log/app.jsonl | jq 'select(.pid == 72953 and .severity == "INFO")'
+{
+  "severity": "INFO",
+  "timestamp": "2022-06-11T01:06:19.075949+09:00",
+  "caller": "basic/main.go:20",
+  "function": "main.main",
+  "message": "USER_INFO",
+  "version": "bac411a",
+  "pid": 72953,
+  "user_name": "Alice",
+  "user_age": 20
+}
+
+```
+
+
 # Examples
 - [examples](examples)
 - [example_test.go](example_test.go)
