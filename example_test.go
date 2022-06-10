@@ -252,15 +252,21 @@ func ExampleSyncWhenStop() {
 	// Output:
 }
 
-func ExampleOther() {
+func ExampleOthers() {
 	zl.Cleanup()
 	zl.SetLevel(zl.DebugLevel)
-	zl.SetRotateFileName("./log/example-Dump.jsonl")
-	zl.Init()
-	defer zl.Sync()
 	zl.SetOutputByString("")
 	zl.SetRepositoryCallerEncoder("", "", "")
 	zl.SetSeparator(" --- ")
+	zl.SetOutput(zl.FileOutput)
+	zl.SetRotateFileName("./log/example-Dump.jsonl")
+	zl.Init()
+	defer zl.Sync()
+
 	zl.InfoErr("TEST", fmt.Errorf("error"))
+	l1 := zl.New(
+		zap.Int("user_id", 1),
+	).Named("log1")
+	l1.Info("test")
 	// Output:
 }
