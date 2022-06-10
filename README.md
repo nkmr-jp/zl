@@ -37,11 +37,6 @@ Its design focuses on the developer experience and is easy to use.
 go get -u github.com/nkmr-jp/zl
 ```
 
-```sh
-# If you want to use the latest feature.
-go get -u github.com/nkmr-jp/zl@develop
-```
-
 # Example
 
 - [examples](examples)
