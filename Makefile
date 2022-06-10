@@ -36,8 +36,12 @@ doc:
 	@echo
 	@godoc -http=:6060
 
-test:
-	go test ./... -v
+test: cover
+	open cover.html
+
+cover:
+	go test . -coverprofile=cover.out
+	go tool cover -html=cover.out -o cover.html
 
 lint:
 	golangci-lint run --fix
