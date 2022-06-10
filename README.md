@@ -66,7 +66,7 @@ func main() {
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Error("SOME_ERROR", fmt.Errorf("some error occurred"))
+	zl.Error("ERROR_MESSAGE", fmt.Errorf("some error occurred"))
 }
 ```
 
