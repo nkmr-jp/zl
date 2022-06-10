@@ -186,8 +186,8 @@ func ExampleError() {
 	zl.Init()
 	defer zl.Sync() // flush log buffer
 
-	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
+	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
 	zl.Info("INFO")
-	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occured"))
+	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
 	// Output:
 }
