@@ -57,6 +57,7 @@ import (
 func main() {
 	// Set Options
 	zl.SetLevel(zl.DebugLevel)
+	zl.SetOmitKeys(zl.HostnameKey)
 
 	// Initialize
 	zl.Init()
@@ -64,6 +65,7 @@ func main() {
 
 	// Write logs
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you always want to display to console"))
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Error("ERROR_MESSAGE", fmt.Errorf("some error occurred"))
@@ -71,15 +73,16 @@ func main() {
 ```
 
 ```sh
-$ cat log/app.jsonl | jq 'select(.pid == 72953 and .severity == "INFO")'
+$ cat log/app.jsonl | jq 'select(.pid == 15262 and .severity == "INFO")'
 {
   "severity": "INFO",
-  "timestamp": "2022-06-11T01:06:19.075949+09:00",
-  "caller": "basic/main.go:20",
+  "timestamp": "2022-06-11T09:07:17.638353+09:00",
+  "caller": "basic/main.go:19",
   "function": "main.main",
   "message": "USER_INFO",
-  "version": "bac411a",
-  "pid": 72953,
+  "version": "b9c9349",
+  "hostname": "nkmrnoMacBook-Pro.local",
+  "pid": 15262,
   "user_name": "Alice",
   "user_age": 20
 }
