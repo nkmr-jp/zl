@@ -44,6 +44,7 @@ go get -u github.com/nkmr-jp/zl
 
 # Quick Start
 
+code: [examples/basic/main.go](examples/basic/main.go)
 ```go
 package main
 
@@ -65,30 +66,32 @@ func main() {
 
 	// Write logs
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
-	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you always want to display to console"))
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you want to display to console"))
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Error("ERROR_MESSAGE", fmt.Errorf("some error occurred"))
 }
 ```
 
+console output: <br><br>
+<img width="800px" src="https://user-images.githubusercontent.com/8490118/173165186-74b001e4-80f1-4573-b99c-a94445760360.png" />
+
+
+file output:
 ```sh
-$ cat log/app.jsonl | jq 'select(.pid == 15262 and .severity == "INFO")'
+$ cat log/app.jsonl | jq 'select(.message | startswith("USER_")) | select(.pid==17925)'
 {
   "severity": "INFO",
-  "timestamp": "2022-06-11T09:07:17.638353+09:00",
-  "caller": "basic/main.go:19",
+  "timestamp": "2022-06-11T09:24:01.14941+09:00",
+  "caller": "basic/main.go:20",
   "function": "main.main",
   "message": "USER_INFO",
-  "version": "b9c9349",
-  "hostname": "nkmrnoMacBook-Pro.local",
-  "pid": 15262,
+  "version": "5bb45d7",
+  "pid": 17925,
   "user_name": "Alice",
   "user_age": 20
-}
-
+}   
 ```
-
 
 # Examples
 - [examples](examples)
