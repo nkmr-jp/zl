@@ -73,8 +73,8 @@ func main() {
 }
 ```
 
-console output: <br><br>
-<img width="800px" src="https://user-images.githubusercontent.com/8490118/173165186-74b001e4-80f1-4573-b99c-a94445760360.png" />
+console output: <br>
+<img width="100%" src="https://user-images.githubusercontent.com/8490118/173165186-74b001e4-80f1-4573-b99c-a94445760360.png" />
 
 
 file output:
