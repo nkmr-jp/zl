@@ -159,7 +159,9 @@ func Sync() {
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
-	pretty.showErrorReport()
+	if outputType == PrettyOutput {
+		pretty.showErrorReport()
+	}
 }
 
 // SyncWhenStop flush log buffer. when interrupt or terminated.
