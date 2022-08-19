@@ -31,6 +31,7 @@ type ErrorReport struct {
 	Error      string        `json:"error"`
 	Stacktrace string        `json:"stacktrace"`
 	Pid        int           `json:"pid"`
+	Timestamp  string        `json:"timestamp"`
 }
 
 //

@@ -29,6 +29,7 @@ func newPrettyLogger() *prettyLogger {
 	if funk.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
 	}
+
 	if isStdOut {
 		l.SetOutput(os.Stdout)
 	}
@@ -138,7 +139,7 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	count := 0
 	ln := 1
 	for scanner.Scan() {
-		trace := l.fmtStackTrace(count, ln, scanner)
+		trace := l.fmtStackTrace(count+1, ln, scanner)
 		if trace != "" {
 			count++
 		}
@@ -153,14 +154,14 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 }
 
 func (l *prettyLogger) printTraces(count int, traces string) {
+	var head string
 	if count == 0 {
 		return
 	}
-	head := au.Red(fmt.Sprintf(
-		"\t\t\t\t%v ERROR OCCURRED\t\t\t\t",
-		count,
-	)).Bold()
-	output := fmt.Sprintf("\n%s\n\n%s", head, traces)
+	head += au.Red("ERROR OCCURRED \n").String()
+	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
+	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
+	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
 	if isStdOut {
 		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
 			return
@@ -174,25 +175,49 @@ func (l *prettyLogger) printTraces(count int, traces string) {
 
 func (l *prettyLogger) fmtStackTrace(count, ln int, scanner *bufio.Scanner) string {
 	var report ErrorReport
-	var output string
+	var output, logFileAbsPath string
 	if err := json.Unmarshal(scanner.Bytes(), &report); err != nil {
 		return ""
 	}
-	logFile := fmt.Sprintf("%v:%v", filepath.Base(fileName), ln)
-	msg := l.coloredLevel(report.Severity).Bold().String() + " " + l.coloredMsg(
-		fmt.Sprintf("%s%s%s", au.Bold(report.Message), separator, au.Magenta(report.Error)),
-		report.Severity, nil,
-	)
-	if report.Stacktrace != "" && report.Pid == pid {
-		output = fmt.Sprintf(
-			"%v %v ( %s )\n\n\t%v\n\n",
-			au.Red(fmt.Sprintf("[%d]", count+1)).Bold(),
-			msg,
-			logFile,
-			strings.ReplaceAll(report.Stacktrace, "\n", "\n\t"),
-		)
+	if report.Stacktrace == "" || report.Pid != pid {
+		return ""
 	}
+	logFileAbsPath, err := filepath.Abs(fileName)
+	if err != nil {
+		return ""
+	}
+
+	// output += au.Bold(fmt.Sprintf("Error%d.\n",count)).String()
+
+	output += fmt.Sprintf("%s%s %s%s%s\n",
+		// l.attr("Console"),
+		fmt.Sprintf("%d. ", count),
+		l.coloredLevel(report.Severity).String(),
+		report.Message,
+		separator,
+		au.Magenta(report.Error),
+	)
+
+	output += fmt.Sprintf("%v: %v\n",
+		l.attr("Timestamp"),
+		report.Timestamp,
+	)
+	output += fmt.Sprintf("%v:   %v:%v\n",
+		l.attr("LogFile"),
+		logFileAbsPath,
+		ln,
+	)
+
+	output += fmt.Sprintf("%v: \n\t%v\n\n\n",
+		l.attr("StackTrace"),
+		strings.ReplaceAll(report.Stacktrace, "\n", "\n\t"),
+	)
+
 	return output
+}
+
+func (l *prettyLogger) attr(str string) string {
+	return "  " + au.Cyan(str).String()
 }
 
 func (l *prettyLogger) dump(a ...interface{}) {
