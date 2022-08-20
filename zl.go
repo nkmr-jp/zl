@@ -34,7 +34,7 @@ var (
 	consoleFields  = []string{consoleFieldDefault}
 	omitKeys       []Key
 	isStdOut       bool
-	separator      = " : "
+	separator      = " "
 	pid            int
 )
 
@@ -240,7 +240,7 @@ func Cleanup() {
 	consoleFields = []string{consoleFieldDefault}
 	omitKeys = nil
 	isStdOut = false
-	separator = " : "
+	separator = " "
 
 	fileName = ""
 	maxSize = 0

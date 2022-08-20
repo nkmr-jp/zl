@@ -135,22 +135,48 @@ func (l *prettyLogger) showErrorReport() {
 
 func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	scanner := bufio.NewScanner(fp)
-	var traces string
+	var traces, key string
+	var groups []*ErrorGroup
+
 	count := 0
-	ln := 1
+	ln := 0
 	for scanner.Scan() {
-		trace := l.fmtStackTrace(count+1, ln, scanner)
-		if trace != "" {
-			count++
-		}
-		traces += trace
 		ln++
+		var errorLog *ErrorLog
+		var group *ErrorGroup
+		flg := false
+		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
+			continue
+		}
+		if errorLog.Stacktrace == "" || errorLog.Pid != pid {
+			continue
+		}
+		key = fmt.Sprintf("severity:%s,message:%s,caller:%s,error:%s",
+			errorLog.Severity, errorLog.Message, errorLog.Error, errorLog.Caller,
+		)
+		errorLog.Line = ln
+		for i := range groups {
+			if groups[i].Key == key {
+				groups[i].ErrorLogs = append(groups[i].ErrorLogs, errorLog)
+				flg = true
+			}
+		}
+		if !flg {
+			group = &ErrorGroup{Key: key}
+			group.ErrorLogs = append(group.ErrorLogs, errorLog)
+			groups = append(groups, group)
+		}
+		count++
+	}
+
+	for i, v := range groups {
+		traces += l.fmtStackTrace(i, len(v.ErrorLogs), v.ErrorLogs[len(v.ErrorLogs)-1])
 	}
 
 	if err := scanner.Err(); err != nil {
 		l.Logger.Fatal(err)
 	}
-	return count, traces
+	return len(groups), traces
 }
 
 func (l *prettyLogger) printTraces(count int, traces string) {
@@ -158,9 +184,9 @@ func (l *prettyLogger) printTraces(count int, traces string) {
 	if count == 0 {
 		return
 	}
-	head += au.Red("ERROR OCCURRED \n").String()
-	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
+	head += au.Red("ERROR REPORT\n").Bold().String()
 	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
+	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
 	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
 	if isStdOut {
 		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
@@ -173,44 +199,36 @@ func (l *prettyLogger) printTraces(count int, traces string) {
 	}
 }
 
-func (l *prettyLogger) fmtStackTrace(count, ln int, scanner *bufio.Scanner) string {
-	var report ErrorReport
-	var output, logFileAbsPath string
-	if err := json.Unmarshal(scanner.Bytes(), &report); err != nil {
-		return ""
-	}
-	if report.Stacktrace == "" || report.Pid != pid {
-		return ""
-	}
+func (l *prettyLogger) fmtStackTrace(num, count int, el *ErrorLog) string {
+	var output, logFileAbsPath, errorCount string
 	logFileAbsPath, err := filepath.Abs(fileName)
 	if err != nil {
 		return ""
 	}
 
-	// output += au.Bold(fmt.Sprintf("Error%d.\n",count)).String()
-
-	output += fmt.Sprintf("%s%s %s%s%s\n",
-		// l.attr("Console"),
-		fmt.Sprintf("%d. ", count),
-		l.coloredLevel(report.Severity).String(),
-		report.Message,
+	if count > 1 {
+		errorCount = au.Faint(fmt.Sprintf("(%v times)", count)).String()
+	}
+	output += fmt.Sprintf("%v. %s: %s %s%s%s %v\n",
+		au.Bold(num+1),
+		filepath.Base(el.Caller),
+		l.coloredLevel(el.Severity).String(),
+		el.Message,
 		separator,
-		au.Magenta(report.Error),
+		au.Magenta(el.Error),
+		errorCount,
 	)
-
-	output += fmt.Sprintf("%v: %v\n",
-		l.attr("Timestamp"),
-		report.Timestamp,
-	)
-	output += fmt.Sprintf("%v:   %v:%v\n",
+	if el.Timestamp != "" {
+		output += fmt.Sprintf("%v:\t%v\n", l.attr("Timestamp"), el.Timestamp)
+	}
+	output += fmt.Sprintf("%v:\t%v:%v\n",
 		l.attr("LogFile"),
 		logFileAbsPath,
-		ln,
+		el.Line,
 	)
-
 	output += fmt.Sprintf("%v: \n\t%v\n\n\n",
 		l.attr("StackTrace"),
-		strings.ReplaceAll(report.Stacktrace, "\n", "\n\t"),
+		strings.ReplaceAll(el.Stacktrace, "\n", "\n\t"),
 	)
 
 	return output

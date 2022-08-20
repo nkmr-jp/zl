@@ -25,13 +25,20 @@ const (
 	PIDKey        Key = "pid"
 )
 
-type ErrorReport struct {
+type ErrorGroup struct {
+	ErrorLogs []*ErrorLog
+	Key       string
+}
+
+type ErrorLog struct {
 	Severity   zapcore.Level `json:"severity"`
+	Timestamp  string        `json:"timestamp"`
+	Caller     string        `json:"caller"`
 	Message    string        `json:"message"`
 	Error      string        `json:"error"`
 	Stacktrace string        `json:"stacktrace"`
 	Pid        int           `json:"pid"`
-	Timestamp  string        `json:"timestamp"`
+	Line       int
 }
 
 //
