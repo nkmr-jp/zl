@@ -81,14 +81,20 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 	var ret string
 	var consoles []string
 	for i := range fields {
-		if funk.ContainsString(consoleFields, fields[i].Key) {
-			var val string
-			if fields[i].String != "" {
-				val = fields[i].String
-			} else {
-				val = strconv.Itoa(int(fields[i].Integer))
+		for i2 := range consoleFields {
+			if consoleFields[i2] == fields[i].Key {
+				var val string
+				if fields[i].String != "" {
+					val = fields[i].String
+				} else {
+					val = strconv.Itoa(int(fields[i].Integer))
+				}
+				if i2%2 == 0 {
+					consoles = append(consoles, au.Cyan(val).String())
+				} else {
+					consoles = append(consoles, au.Blue(val).String())
+				}
 			}
-			consoles = append(consoles, au.Cyan(val).String())
 		}
 	}
 	if consoles != nil {
@@ -207,9 +213,9 @@ func (l *prettyLogger) fmtStackTrace(num, count int, el *ErrorLog) string {
 	}
 
 	if count > 1 {
-		errorCount = au.Faint(fmt.Sprintf("(%v times)", count)).String()
+		errorCount = au.Faint(fmt.Sprintf("%v(%v times)", separator, count)).String()
 	}
-	output += fmt.Sprintf("%v. %s: %s %s%s%s %v\n",
+	output += fmt.Sprintf("%v. %s: %s %s%s%s%v\n",
 		au.Bold(num+1),
 		filepath.Base(el.Caller),
 		l.coloredLevel(el.Severity).String(),

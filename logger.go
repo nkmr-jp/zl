@@ -47,14 +47,14 @@ func (l *zlLogger) Warn(message string, fields ...zap.Field) {
 	l.logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) Error(message string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
+func (l *zlLogger) Error(message string, fields ...zap.Field) {
+	fields = append(fields, l.fields...)
+	l.logger(message, ErrorLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) Fatal(message string, err error, fields ...zap.Field) {
-	fields = append(append(fields, zap.Error(err)), l.fields...)
-	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
+func (l *zlLogger) Fatal(message string, fields ...zap.Field) {
+	fields = append(fields, l.fields...)
+	l.logger(message, FatalLevel, fields).Warn(message, fields...)
 }
 
 func (l *zlLogger) DebugErr(message string, err error, fields ...zap.Field) {
@@ -70,6 +70,21 @@ func (l *zlLogger) InfoErr(message string, err error, fields ...zap.Field) {
 func (l *zlLogger) WarnErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, WarnLevel, err, fields).Warn(message, fields...)
+}
+
+func (l *zlLogger) ErrorErr(message string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
+}
+
+func (l *zlLogger) Err(message string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
+}
+
+func (l *zlLogger) FatalErr(message string, err error, fields ...zap.Field) {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
 }
 
 func (l *zlLogger) logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
@@ -101,14 +116,14 @@ func Warn(message string, fields ...zap.Field) {
 	logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
-// Error is wrapper of Zap's Error with error field.
-func Error(message string, err error, fields ...zap.Field) {
-	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
+// Error is wrapper of Zap's Error.
+func Error(message string, fields ...zap.Field) {
+	logger(message, ErrorLevel, fields).Error(message, fields...)
 }
 
 // Fatal is wrapper of Zap's Fatal.
-func Fatal(message string, err error, fields ...zap.Field) {
-	loggerErr(message, FatalLevel, err, fields).Fatal(message, append(fields, zap.Error(err))...)
+func Fatal(message string, fields ...zap.Field) {
+	logger(message, WarnLevel, fields).Fatal(message, fields...)
 }
 
 // DebugErr is Outputs a DEBUG log with error field.
@@ -124,6 +139,21 @@ func InfoErr(message string, err error, fields ...zap.Field) {
 // WarnErr is Outputs WARN log with error field.
 func WarnErr(message string, err error, fields ...zap.Field) {
 	loggerErr(message, WarnLevel, err, fields).Warn(message, append(fields, zap.Error(err))...)
+}
+
+// ErrorErr is Outputs ERROR log with error field.
+func ErrorErr(message string, err error, fields ...zap.Field) {
+	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
+}
+
+// Err is alias of ErrorErr.
+func Err(message string, err error, fields ...zap.Field) {
+	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
+}
+
+// FatalErr is Outputs ERROR log with error field.
+func FatalErr(message string, err error, fields ...zap.Field) {
+	loggerErr(message, FatalLevel, err, fields).Fatal(message, append(fields, zap.Error(err))...)
 }
 
 // Dump is a deep pretty printer for Go data structures to aid in debugging.

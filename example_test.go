@@ -1,6 +1,7 @@
 package zl_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -37,11 +38,11 @@ func Example() {
 	// Write logs
 	console := "display to console when output type is pretty"
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
-	err := fmt.Errorf("error message")
-	zl.Error("ERROR_MESSAGE", err) // error level log must with error message.
+	_, err := os.ReadFile("test")
+	zl.Error("READ_FILE_ERROR", zap.Error(err)) // error level log must with error message.
+	zl.ErrorErr("READ_FILE_ERROR", err)         // same to above.
+	zl.Err("READ_FILE_ERROR", err)              // same to above.
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Warn("WARN_MESSAGE", zap.Error(err))    // warn level log with error message.
-	zl.WarnErr("WARN_MESSAGE_WITH_ERROR", err) // same to above.
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console(console))
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Consolep(nil))
 	zl.DebugErr("DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE", err, zl.Consolep(&console))
@@ -63,13 +64,13 @@ func Example() {
 	// Output:
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"ERROR_MESSAGE","error":"error message"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
-	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE","error":"error message"}
-	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"WARN_MESSAGE_WITH_ERROR","error":"error message"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":null}
-	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"error message"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"open test: no such file or directory"}
 }
 
 func ExampleSetVersion() {
@@ -104,8 +105,8 @@ func ExampleSetVersion() {
 
 	// Output:
 	// {"severity":"DEBUG","caller":"zl/zl.go:69","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
-	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L99","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L100","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L100","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L101","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 }
 
 func ExampleNew() {
@@ -141,11 +142,11 @@ func ExampleNew() {
 	err := fmt.Errorf("error")
 	zl.Info("GLOBAL_INFO")
 	l1.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
-	l1.Error("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	l1.Err("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
 	l2.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
 	l2.Debug("TEST")
 	l2.Warn("TEST")
-	l2.Error("TEST", err)
+	l2.Err("TEST", err)
 	l2.InfoErr("TEST", err)
 	l2.DebugErr("TEST", err)
 	l2.WarnErr("TEST", err)
@@ -206,10 +207,18 @@ func ExampleError() {
 	zl.Init()
 	defer zl.Sync() // flush log buffer
 
-	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
+	_, err := os.ReadFile("test")
+	zl.Err("READ_FILE_ERROR", err)
 	zl.Info("INFO")
 	zl.InfoErr("INFO_ERR", fmt.Errorf("error"))
-	zl.Error("ERROR_WITH_STACKTRACE", fmt.Errorf("error occurred"))
+	v := ""
+	err = json.Unmarshal([]byte("test"), &v)
+	zl.Err("JSON_UNMARSHAL_ERROR", err)
+
+	for i := 0; i < 3; i++ {
+		err = fmt.Errorf("if the same error occurs multiple times in the same location, the error report will show them all together")
+		zl.Err("ERRORS_IN_LOOPS", err)
+	}
 	// Output:
 }
 

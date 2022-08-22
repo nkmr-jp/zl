@@ -241,7 +241,6 @@ func Cleanup() {
 	omitKeys = nil
 	isStdOut = false
 	separator = " "
-
 	fileName = ""
 	maxSize = 0
 	maxBackups = 0
