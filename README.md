@@ -92,24 +92,28 @@ func main() {
 }
 ```
 
-console output: <br>
-![image](https://user-images.githubusercontent.com/8490118/185822094-b071168a-baa1-4548-9423-76ba0464e7a5.png)
+**Console output**. <br>
+The console displays minimal information. Displays a stack trace when an error occurs.
+![image](https://user-images.githubusercontent.com/8490118/185822142-4667200b-8087-49f0-9e41-68ebb1731985.png)
 
-
-file output:
+**File output**. <br>
+Detailed information is available in the log file. You can also use jq to extract only the information you need.
 ```sh
-$ cat log/app.jsonl | jq 'select(.message | startswith("USER_")) | select(.pid==17925)'
+$ cat log/app.jsonl | jq 'select(.message | startswith("USER_")) | select(.pid==921)'
+```
+```json
 {
   "severity": "INFO",
-  "timestamp": "2022-06-11T09:24:01.14941+09:00",
-  "caller": "basic/main.go:20",
+  "timestamp": "2022-08-22T10:30:39.154575+09:00",
+  "caller": "basic/main.go:22",
   "function": "main.main",
   "message": "USER_INFO",
-  "version": "5bb45d7",
-  "pid": 17925,
+  "version": "fc43f68",
+  "pid": 921,
   "user_name": "Alice",
   "user_age": 20
-}   
+}
+   
 ```
 
 # Examples
