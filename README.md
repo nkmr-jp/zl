@@ -19,6 +19,10 @@ It is ideal for developing applications, APIs, and command line tools.
 - Easy-to-read error reports and stack trace.
 - It can jumps directly to the line of the file that is output to the console log (when using Goland or VSCode).
 
+![image](https://user-images.githubusercontent.com/8490118/185822142-4667200b-8087-49f0-9e41-68ebb1731985.png)
+
+
+
 ### ConsoleOutput :zap:
 - High Performance.
 - The optimal setting for a production environment.
@@ -74,6 +78,8 @@ func main() {
 	zl.Debug("DEBUG_MESSAGE")
 	_, err := os.ReadFile("test")
 	zl.Err("READ_FILE_ERROR", err)
+	
+	// if the same error occurs multiple times in the same location, the error report will show them all together.
 	for i := 0; i < 2; i++ {
 		_, err = strconv.Atoi("one")
 		zl.Err("A_TO_I_ERROR", err)
@@ -87,7 +93,7 @@ func main() {
 ```
 
 console output: <br>
-<img width="100%" src="https://user-images.githubusercontent.com/8490118/173165186-74b001e4-80f1-4573-b99c-a94445760360.png" />
+![image](https://user-images.githubusercontent.com/8490118/185822094-b071168a-baa1-4548-9423-76ba0464e7a5.png)
 
 
 file output:
