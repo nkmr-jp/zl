@@ -6,7 +6,8 @@
 
 zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
 
-Its design focuses on the developer experience and is easy to use. 
+Its design focuses on the developer experience and is easy to use.
+It is ideal for developing applications, APIs, and command line tools.
 
 # Features
 ## Selectable output types
@@ -15,7 +16,7 @@ Its design focuses on the developer experience and is easy to use.
 - The optimal setting for a development environment.
 - Output colored simple logs to the console.
 - Output detail JSON logs to logfile.
-- Very easy-to-read error reports and stack trace.
+- Easy-to-read error reports and stack trace.
 - It can jumps directly to the line of the file that is output to the console log (when using Goland or VSCode).
 
 ### ConsoleOutput :zap:
@@ -26,7 +27,7 @@ Its design focuses on the developer experience and is easy to use.
 
 ### FileOutput
 - The optimal setting for a production environment.
-- Especially suitable for on-premises environments.
+- It is especially suitable for command line tool development.
 - Support logfile rotation.
 
 ### ConsoleAndFileOutput
@@ -49,7 +50,9 @@ code: [examples/basic/main.go](examples/basic/main.go)
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"os"
+	"strconv"
 
 	"github.com/nkmr-jp/zl"
 	"go.uber.org/zap"
@@ -69,7 +72,17 @@ func main() {
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you want to display to console"))
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Error("ERROR_MESSAGE", fmt.Errorf("some error occurred"))
+	_, err := os.ReadFile("test")
+	zl.Err("READ_FILE_ERROR", err)
+	for i := 0; i < 2; i++ {
+		_, err = strconv.Atoi("one")
+		zl.Err("A_TO_I_ERROR", err)
+	}
+	for i := 0; i < 3; i++ {
+		v := ""
+		err = json.Unmarshal([]byte("test"), &v)
+		zl.Err("JSON_UNMARSHAL_ERROR", err)
+	}
 }
 ```
 

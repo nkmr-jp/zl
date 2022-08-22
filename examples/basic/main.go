@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"os"
+	"strconv"
 
 	"github.com/nkmr-jp/zl"
 	"go.uber.org/zap"
@@ -21,12 +23,15 @@ func main() {
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you want to display to console"))
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
-	zl.Err("ERROR_MESSAGE1", fmt.Errorf("errors occurring outside the loop"))
-	for i := 0; i < 3; i++ {
-		zl.Err("ERROR_MESSAGE2", fmt.Errorf("errors occurring in the loop"))
+	_, err := os.ReadFile("test")
+	zl.Err("READ_FILE_ERROR", err)
+	for i := 0; i < 2; i++ {
+		_, err = strconv.Atoi("one")
+		zl.Err("A_TO_I_ERROR", err)
 	}
-
-	for i := 0; i < 4; i++ {
-		zl.Err("ERROR_MESSAGE3", fmt.Errorf("errors occurring in the loop"))
+	for i := 0; i < 3; i++ {
+		v := ""
+		err = json.Unmarshal([]byte("test"), &v)
+		zl.Err("JSON_UNMARSHAL_ERROR", err)
 	}
 }
