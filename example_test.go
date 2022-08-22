@@ -39,9 +39,9 @@ func Example() {
 	console := "display to console when output type is pretty"
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
 	_, err := os.ReadFile("test")
-	zl.Error("READ_FILE_ERROR", zap.Error(err)) // error level log must with error message.
-	zl.ErrorErr("READ_FILE_ERROR", err)         // same to above.
-	zl.Err("READ_FILE_ERROR", err)              // same to above.
+	zl.Error("READ_FILE_ERROR", zap.Error(err))
+	zl.ErrorErr("READ_FILE_ERROR", err) // same to above.
+	zl.Err("READ_FILE_ERROR", err)      // same to above.
 	zl.Debug("DEBUG_MESSAGE")
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console(console))
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Consolep(nil))
