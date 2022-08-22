@@ -27,11 +27,11 @@ It is ideal for developing applications, APIs, and command line tools.
 - High Performance.
 - The optimal setting for a production environment.
 - Especially suitable for cloud environments such as [Google Cloud Logging](https://cloud.google.com/logging) or [Datadog](https://www.datadoghq.com/).
-- Only uses the features provided by [zap](https://github.com/uber-go/zap#performance) (**not sugared**).
+- It is fast because it uses only the functions provided by [zap](https://github.com/uber-go/zap#performance) (**not sugared**) and does not perform any extra processing.
 
 ### FileOutput
 - The optimal setting for a production environment.
-- It is especially suitable for command line tool development.
+- It is especially suitable for command line tool or on-premises environments.
 - Support logfile rotation.
 
 ### ConsoleAndFileOutput
