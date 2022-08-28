@@ -34,7 +34,7 @@ var (
 	consoleFields  = []string{consoleFieldDefault}
 	omitKeys       []Key
 	isStdOut       bool
-	separator      = " : "
+	separator      = " "
 	pid            int
 )
 
@@ -159,7 +159,9 @@ func Sync() {
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
-	pretty.showErrorReport()
+	if outputType == PrettyOutput {
+		pretty.showErrorReport()
+	}
 }
 
 // SyncWhenStop flush log buffer. when interrupt or terminated.
@@ -238,8 +240,7 @@ func Cleanup() {
 	consoleFields = []string{consoleFieldDefault}
 	omitKeys = nil
 	isStdOut = false
-	separator = " : "
-
+	separator = " "
 	fileName = ""
 	maxSize = 0
 	maxBackups = 0

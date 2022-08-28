@@ -29,6 +29,7 @@ func newPrettyLogger() *prettyLogger {
 	if funk.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
 	}
+
 	if isStdOut {
 		l.SetOutput(os.Stdout)
 	}
@@ -80,14 +81,20 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 	var ret string
 	var consoles []string
 	for i := range fields {
-		if funk.ContainsString(consoleFields, fields[i].Key) {
-			var val string
-			if fields[i].String != "" {
-				val = fields[i].String
-			} else {
-				val = strconv.Itoa(int(fields[i].Integer))
+		for i2 := range consoleFields {
+			if consoleFields[i2] == fields[i].Key {
+				var val string
+				if fields[i].String != "" {
+					val = fields[i].String
+				} else {
+					val = strconv.Itoa(int(fields[i].Integer))
+				}
+				if i2%2 == 0 {
+					consoles = append(consoles, au.Cyan(val).String())
+				} else {
+					consoles = append(consoles, au.Blue(val).String())
+				}
 			}
-			consoles = append(consoles, au.Cyan(val).String())
 		}
 	}
 	if consoles != nil {
@@ -132,35 +139,62 @@ func (l *prettyLogger) showErrorReport() {
 	l.printTraces(count, traces)
 }
 
+// nolint:funlen
 func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	scanner := bufio.NewScanner(fp)
-	var traces string
+	var traces, key string
+	var groups []*ErrorGroup
+
 	count := 0
-	ln := 1
+	ln := 0
 	for scanner.Scan() {
-		trace := l.fmtStackTrace(count, ln, scanner)
-		if trace != "" {
-			count++
-		}
-		traces += trace
 		ln++
+		var errorLog *ErrorLog
+		var group *ErrorGroup
+		flg := false
+		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
+			continue
+		}
+		if errorLog.Stacktrace == "" || errorLog.Pid != pid {
+			continue
+		}
+		key = fmt.Sprintf("severity:%s,message:%s,caller:%s,error:%s",
+			errorLog.Severity, errorLog.Message, errorLog.Error, errorLog.Caller,
+		)
+		errorLog.Line = ln
+		for i := range groups {
+			if groups[i].Key == key {
+				groups[i].ErrorLogs = append(groups[i].ErrorLogs, errorLog)
+				flg = true
+			}
+		}
+		if !flg {
+			group = &ErrorGroup{Key: key}
+			group.ErrorLogs = append(group.ErrorLogs, errorLog)
+			groups = append(groups, group)
+		}
+		count++
+	}
+
+	for i, v := range groups {
+		traces += l.fmtStackTrace(i, len(v.ErrorLogs), v.ErrorLogs[len(v.ErrorLogs)-1])
 	}
 
 	if err := scanner.Err(); err != nil {
 		l.Logger.Fatal(err)
 	}
-	return count, traces
+	return len(groups), traces
 }
 
 func (l *prettyLogger) printTraces(count int, traces string) {
+	var head string
 	if count == 0 {
 		return
 	}
-	head := au.Red(fmt.Sprintf(
-		"\t\t\t\t%v ERROR OCCURRED\t\t\t\t",
-		count,
-	)).Bold()
-	output := fmt.Sprintf("\n%s\n\n%s", head, traces)
+	head += au.Red("ERROR REPORT\n").Bold().String()
+	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
+	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
+	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
 	if isStdOut {
 		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
 			return
@@ -172,27 +206,43 @@ func (l *prettyLogger) printTraces(count int, traces string) {
 	}
 }
 
-func (l *prettyLogger) fmtStackTrace(count, ln int, scanner *bufio.Scanner) string {
-	var report ErrorReport
-	var output string
-	if err := json.Unmarshal(scanner.Bytes(), &report); err != nil {
+func (l *prettyLogger) fmtStackTrace(num, count int, el *ErrorLog) string {
+	var output, logFileAbsPath, errorCount string
+	logFileAbsPath, err := filepath.Abs(fileName)
+	if err != nil {
 		return ""
 	}
-	logFile := fmt.Sprintf("%v:%v", filepath.Base(fileName), ln)
-	msg := l.coloredLevel(report.Severity).Bold().String() + " " + l.coloredMsg(
-		fmt.Sprintf("%s%s%s", au.Bold(report.Message), separator, au.Magenta(report.Error)),
-		report.Severity, nil,
-	)
-	if report.Stacktrace != "" && report.Pid == pid {
-		output = fmt.Sprintf(
-			"%v %v ( %s )\n\n\t%v\n\n",
-			au.Red(fmt.Sprintf("[%d]", count+1)).Bold(),
-			msg,
-			logFile,
-			strings.ReplaceAll(report.Stacktrace, "\n", "\n\t"),
-		)
+
+	if count > 1 {
+		errorCount = au.Faint(fmt.Sprintf("%v(%v times)", separator, count)).String()
 	}
+	output += fmt.Sprintf("%v. %s: %s %s%s%s%v\n",
+		au.Bold(num+1),
+		filepath.Base(el.Caller),
+		l.coloredLevel(el.Severity).String(),
+		el.Message,
+		separator,
+		au.Magenta(el.Error),
+		errorCount,
+	)
+	if el.Timestamp != "" {
+		output += fmt.Sprintf("%v:\t%v\n", l.attr("Timestamp"), el.Timestamp)
+	}
+	output += fmt.Sprintf("%v:\t%v:%v\n",
+		l.attr("LogFile"),
+		logFileAbsPath,
+		el.Line,
+	)
+	output += fmt.Sprintf("%v: \n\t%v\n\n\n",
+		l.attr("StackTrace"),
+		strings.ReplaceAll(el.Stacktrace, "\n", "\n\t"),
+	)
+
 	return output
+}
+
+func (l *prettyLogger) attr(str string) string {
+	return "  " + au.Cyan(str).String()
 }
 
 func (l *prettyLogger) dump(a ...interface{}) {
