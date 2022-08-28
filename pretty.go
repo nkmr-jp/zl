@@ -139,6 +139,7 @@ func (l *prettyLogger) showErrorReport() {
 	l.printTraces(count, traces)
 }
 
+// nolint:funlen
 func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	scanner := bufio.NewScanner(fp)
 	var traces, key string
