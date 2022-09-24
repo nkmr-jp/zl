@@ -82,6 +82,12 @@ func (l *zlLogger) Err(message string, err error, fields ...zap.Field) {
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
+func (l *zlLogger) ErrRet(message string, err error, fields ...zap.Field) error {
+	fields = append(append(fields, zap.Error(err)), l.fields...)
+	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
+	return err
+}
+
 func (l *zlLogger) FatalErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
@@ -149,6 +155,12 @@ func ErrorErr(message string, err error, fields ...zap.Field) {
 // Err is alias of ErrorErr.
 func Err(message string, err error, fields ...zap.Field) {
 	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
+}
+
+// ErrRet write error log and return error
+func ErrRet(message string, err error, fields ...zap.Field) error {
+	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
+	return err
 }
 
 // FatalErr is Outputs ERROR log with error field.
