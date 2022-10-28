@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
-	au "github.com/logrusorgru/aurora"
+	au "github.com/logrusorgru/aurora/v4"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
