@@ -12,7 +12,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	au "github.com/logrusorgru/aurora/v4"
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -26,7 +26,7 @@ func newPrettyLogger() *prettyLogger {
 		return nil
 	}
 	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
-	if funk.Contains(omitKeys, TimeKey) {
+	if lo.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
 	}
 
@@ -120,7 +120,7 @@ func (l *prettyLogger) coloredLevel(level zapcore.Level) au.Value {
 }
 
 func (l *prettyLogger) showErrorReport() {
-	if funk.Contains(omitKeys, StacktraceKey) && funk.Contains(omitKeys, PIDKey) {
+	if lo.Contains(omitKeys, StacktraceKey) && lo.Contains(omitKeys, PIDKey) {
 		return
 	}
 
