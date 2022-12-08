@@ -129,7 +129,7 @@ func Error(message string, fields ...zap.Field) {
 
 // Fatal is wrapper of Zap's Fatal.
 func Fatal(message string, fields ...zap.Field) {
-	logger(message, WarnLevel, fields).Fatal(message, fields...)
+	logger(message, FatalLevel, fields).Fatal(message, fields...)
 }
 
 // DebugErr is Outputs a DEBUG log with error field.

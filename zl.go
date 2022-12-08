@@ -12,7 +12,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/thoas/go-funk"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -124,13 +124,13 @@ func setOmitKeys(enc *zapcore.EncoderConfig) {
 }
 
 func getAdditionalFields() (fields []zapcore.Field) {
-	if !funk.Contains(omitKeys, VersionKey) {
+	if !lo.Contains(omitKeys, VersionKey) {
 		fields = append(fields, zap.String(string(VersionKey), GetVersion()))
 	}
-	if !funk.Contains(omitKeys, HostnameKey) {
+	if !lo.Contains(omitKeys, HostnameKey) {
 		fields = append(fields, zap.String(string(HostnameKey), *getHost()))
 	}
-	if !funk.Contains(omitKeys, PIDKey) {
+	if !lo.Contains(omitKeys, PIDKey) {
 		pid = os.Getpid()
 		fields = append(fields, zap.Int(string(PIDKey), pid))
 	}
