@@ -25,6 +25,8 @@ func main() {
 	zl.Debug("DEBUG_MESSAGE")
 	_, err := os.ReadFile("test")
 	zl.Err("READ_FILE_ERROR", err)
+	// zl.FatalErr("FATAL_READ_FILE_ERROR", err)
+
 	for i := 0; i < 2; i++ {
 		_, err = strconv.Atoi("one")
 		zl.Err("A_TO_I_ERROR", err)

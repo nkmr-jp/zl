@@ -38,15 +38,23 @@ var (
 	pid            int
 )
 
+type fatalHook struct{}
+
+func (f fatalHook) OnWrite(_ *zapcore.CheckedEntry, _ []zapcore.Field) {
+	pretty.showErrorReport()
+	os.Exit(1)
+}
+
 // Init initializes the logger.
 func Init() {
 	once.Do(func() {
-		if outputType == PrettyOutput {
-			pretty = newPrettyLogger()
-		}
-
 		encoderConfig = newEncoderConfig()
 		zapLogger = newLogger(encoderConfig)
+		if outputType == PrettyOutput {
+			pretty = newPrettyLogger()
+			zapLogger = zapLogger.WithOptions(zap.WithFatalHook(fatalHook{}))
+		}
+
 		encInternal := newEncoderConfig()
 		encInternal.EncodeCaller = zapcore.ShortCallerEncoder
 		internalLogger = newLogger(encInternal)
