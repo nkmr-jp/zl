@@ -157,7 +157,12 @@ func Err(message string, err error, fields ...zap.Field) {
 	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
 }
 
-// ErrRet write error log and return error
+// ErrRet write error log and return error.
+// A typical usage would be something like.
+//
+//	if err != nil {
+//	  return zl.ErrRet("SOME_ERROR", fmt.Error("some message err: %w",err))
+//	}
 func ErrRet(message string, err error, fields ...zap.Field) error {
 	loggerErr(message, ErrorLevel, err, fields).Error(message, append(fields, zap.Error(err))...)
 	return err

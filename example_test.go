@@ -36,41 +36,62 @@ func Example() {
 	defer zl.Sync() // flush log buffer
 
 	// Write logs
-	console := "display to console when output type is pretty"
 	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
+
+	console := "display to console when output type is pretty"
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Console(console))
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Consolep(&console))
+	zl.Info("DISPLAY_TO_CONSOLE", zl.Consolef("message: %s", console))
+
+	// write error to error field.
 	_, err := os.ReadFile("test")
+	zl.Info("READ_FILE_ERROR", zap.Error(err))
+	zl.InfoErr("READ_FILE_ERROR", err) // same to above.
+	zl.Debug("READ_FILE_ERROR", zap.Error(err))
+	zl.DebugErr("READ_FILE_ERROR", err) // same to above.
+	zl.Warn("READ_FILE_ERROR", zap.Error(err))
+	zl.WarnErr("READ_FILE_ERROR", err) // same to above.
 	zl.Error("READ_FILE_ERROR", zap.Error(err))
 	zl.ErrorErr("READ_FILE_ERROR", err) // same to above.
 	zl.Err("READ_FILE_ERROR", err)      // same to above.
-	zl.Debug("DEBUG_MESSAGE")
-	zl.Info("DISPLAY_TO_CONSOLE", zl.Console(console))
-	zl.Info("DISPLAY_TO_CONSOLE", zl.Consolep(nil))
-	zl.DebugErr("DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE", err, zl.Consolep(&console))
+	zl.ErrRet("READ_FILE_ERROR", err)   // write error to log and return same error.
 
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:44: DEBUG INIT_LOGGER: Severity: DEBUG, Output: Pretty, FileName: ./log/example.jsonl
+	// zl.go:80: DEBUG INIT_LOGGER Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl
 	// example_test.go:39: INFO USER_INFO
-	// example_test.go:41: ERROR ERROR_MESSAGE: error message
-	// example_test.go:42: DEBUG DEBUG_MESSAGE
-	// example_test.go:43: WARN WARN_MESSAGE
-	// example_test.go:44: WARN WARN_MESSAGE_WITH_ERROR: error message
-	// example_test.go:45: INFO DISPLAY_TO_CONSOLE: display to console when output type is pretty
-	// example_test.go:46: DEBUG DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE: error message , display to console when output type is pretty
-	// zl.go:131: DEBUG FLUSH_LOG_BUFFER
+	// example_test.go:42: INFO DISPLAY_TO_CONSOLE display to console when output type is pretty
+	// example_test.go:43: INFO DISPLAY_TO_CONSOLE display to console when output type is pretty
+	// example_test.go:44: INFO DISPLAY_TO_CONSOLE message: display to console when output type is pretty
+	// example_test.go:48: INFO READ_FILE_ERROR
+	// example_test.go:49: INFO READ_FILE_ERROR open test: no such file or directory
+	// example_test.go:50: DEBUG READ_FILE_ERROR
+	// example_test.go:51: DEBUG READ_FILE_ERROR open test: no such file or directory
+	// example_test.go:52: WARN READ_FILE_ERROR
+	// example_test.go:53: WARN READ_FILE_ERROR open test: no such file or directory
+	// example_test.go:54: ERROR READ_FILE_ERROR
+	// example_test.go:55: ERROR READ_FILE_ERROR open test: no such file or directory
+	// example_test.go:56: ERROR READ_FILE_ERROR open test: no such file or directory
+	// example_test.go:57: ERROR READ_FILE_ERROR open test: no such file or directory
 
 	// Output:
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
-	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
-	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
-	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
-	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
-	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":null}
-	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"DEBUG_MESSAGE_WITH_ERROR_AND_CONSOLE","console":"display to console when output type is pretty","error":"open test: no such file or directory"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"message: display to console when output type is pretty"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"WARN","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
 }
 
 func ExampleSetVersion() {
@@ -105,8 +126,9 @@ func ExampleSetVersion() {
 
 	// Output:
 	// {"severity":"DEBUG","caller":"zl/zl.go:77","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
-	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L100","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L101","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L121","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L122","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+
 }
 
 func ExampleNew() {
@@ -146,7 +168,10 @@ func ExampleNew() {
 	l2.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
 	l2.Debug("TEST")
 	l2.Warn("TEST")
+	l2.Error("TEST")
 	l2.Err("TEST", err)
+	l2.ErrorErr("TEST", err)
+	l2.ErrRet("TEST", err) // write error to log and return same error.
 	l2.InfoErr("TEST", err)
 	l2.DebugErr("TEST", err)
 	l2.WarnErr("TEST", err)
@@ -155,17 +180,20 @@ func ExampleNew() {
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:69: DEBUG INIT_LOGGER : Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl
-	// example_test.go:142: INFO GLOBAL_INFO
-	// log1 | example_test.go:143: INFO CONTEXT_SCOPE_INFO : some message to console: test : c7mg6hnr2g4l6vvuao50
-	// log1 | example_test.go:144: ERROR CONTEXT_SCOPE_ERROR : context scope error message : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:145: INFO CONTEXT_SCOPE_INFO2 : some message to console: test : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:146: DEBUG TEST : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:147: WARN TEST : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:148: ERROR TEST : error : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:149: INFO TEST : error : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:150: DEBUG TEST : error : c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:151: WARN TEST : error : c7mg6hnr2g4l6vvuao50
+	// zl.go:77: DEBUG INIT_LOGGER Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl
+	// example_test.go:145: INFO GLOBAL_INFO
+	// log1 | example_test.go:146: INFO CONTEXT_SCOPE_INFO some message to console: test c7mg6hnr2g4l6vvuao50
+	// log1 | example_test.go:147: ERROR CONTEXT_SCOPE_ERROR context scope error message c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:148: INFO CONTEXT_SCOPE_INFO2 some message to console: test c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:149: DEBUG TEST c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:150: WARN TEST c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:151: ERROR TEST c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:152: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:153: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:154: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:155: INFO TEST error c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:156: DEBUG TEST error c7mg6hnr2g4l6vvuao50
+	// log2 | example_test.go:157: WARN TEST error c7mg6hnr2g4l6vvuao50
 
 	// Output:
 	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl"}
@@ -175,6 +203,9 @@ func ExampleNew() {
 	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"DEBUG","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"INFO","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"DEBUG","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
@@ -222,24 +253,6 @@ func ExampleError() {
 	// Output:
 }
 
-func ExampleSetRotateMaxSize() {
-	zl.Cleanup() // removes logger and resets settings.
-	zl.SetLevel(zl.DebugLevel)
-	zl.SetOutput(zl.FileOutput)
-	zl.SetRotateFileName("./log/example-SetRotateMaxSize.jsonl")
-	zl.SetRotateMaxSize(100)
-	zl.SetRotateMaxAge(7)
-	zl.SetRotateMaxBackups(3)
-	zl.SetRotateLocalTime(true)
-	zl.SetRotateCompress(true)
-
-	// Initialize
-	zl.Init()
-	defer zl.Sync() // flush log buffer
-
-	// Output:
-}
-
 func ExampleDump() {
 	zl.Cleanup() // removes logger and resets settings.
 	zl.SetLevel(zl.DebugLevel)
@@ -258,26 +271,5 @@ func ExampleSyncWhenStop() {
 	defer zl.Sync()
 	zl.SyncWhenStop()
 	zl.Info("TEST")
-	// Output:
-}
-
-func ExampleOthers() {
-	zl.Cleanup()
-	zl.SetLevel(zl.DebugLevel)
-	zl.SetOmitKeys(zl.MessageKey, zl.LevelKey, zl.LoggerKey)
-	zl.GetVersion()
-	zl.SetOutputByString("")
-	zl.SetRepositoryCallerEncoder("", "", "")
-	zl.SetSeparator(" --- ")
-	zl.SetOutput(zl.FileOutput)
-	zl.SetRotateFileName("./log/example-Dump.jsonl")
-	zl.Init()
-	defer zl.Sync()
-
-	zl.InfoErr("TEST", fmt.Errorf("error"))
-	l1 := zl.New(
-		zap.Int("user_id", 1),
-	).Named("log1")
-	l1.Info("test")
 	// Output:
 }
