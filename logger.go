@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type zlLogger struct {
+type Logger struct {
 	pretty    *prettyLogger
 	zapLogger *zap.Logger
 	fields    []zap.Field
@@ -16,15 +16,15 @@ type zlLogger struct {
 
 // New can add additional default fields.
 // e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
-func New(fields ...zap.Field) *zlLogger {
-	return &zlLogger{
+func New(fields ...zap.Field) *Logger {
+	return &Logger{
 		pretty:    newPrettyLogger(),
 		zapLogger: newLogger(encoderConfig),
 		fields:    fields,
 	}
 }
 
-func (l *zlLogger) Named(loggerName string) *zlLogger {
+func (l *Logger) Named(loggerName string) *Logger {
 	if l.pretty != nil {
 		l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
 	}
@@ -32,75 +32,75 @@ func (l *zlLogger) Named(loggerName string) *zlLogger {
 	return l
 }
 
-func (l *zlLogger) Debug(message string, fields ...zap.Field) {
+func (l *Logger) Debug(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, DebugLevel, fields).Debug(message, fields...)
 }
 
-func (l *zlLogger) Info(message string, fields ...zap.Field) {
+func (l *Logger) Info(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) Warn(message string, fields ...zap.Field) {
+func (l *Logger) Warn(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) Error(message string, fields ...zap.Field) {
+func (l *Logger) Error(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, ErrorLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) Fatal(message string, fields ...zap.Field) {
+func (l *Logger) Fatal(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, FatalLevel, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) DebugErr(message string, err error, fields ...zap.Field) {
+func (l *Logger) DebugErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, DebugLevel, err, fields).Debug(message, fields...)
 }
 
-func (l *zlLogger) InfoErr(message string, err error, fields ...zap.Field) {
+func (l *Logger) InfoErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, InfoLevel, err, fields).Info(message, fields...)
 }
 
-func (l *zlLogger) WarnErr(message string, err error, fields ...zap.Field) {
+func (l *Logger) WarnErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, WarnLevel, err, fields).Warn(message, fields...)
 }
 
-func (l *zlLogger) ErrorErr(message string, err error, fields ...zap.Field) {
+func (l *Logger) ErrorErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
-func (l *zlLogger) Err(message string, err error, fields ...zap.Field) {
+func (l *Logger) Err(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
-func (l *zlLogger) ErrRet(message string, err error, fields ...zap.Field) error {
+func (l *Logger) ErrRet(message string, err error, fields ...zap.Field) error {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 	return err
 }
 
-func (l *zlLogger) FatalErr(message string, err error, fields ...zap.Field) {
+func (l *Logger) FatalErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
 }
 
-func (l *zlLogger) logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
+func (l *Logger) logger(message string, level zapcore.Level, fields []zap.Field) *zap.Logger {
 	if l.pretty != nil {
 		l.pretty.log(message, level, fields)
 	}
 	return l.zapLogger
 }
 
-func (l *zlLogger) loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
+func (l *Logger) loggerErr(message string, level zapcore.Level, err error, fields []zap.Field) *zap.Logger {
 	if l.pretty != nil {
 		l.pretty.logWithError(message, level, err, fields)
 	}
