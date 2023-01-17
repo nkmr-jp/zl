@@ -2,7 +2,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/nkmr-jp/zl.svg)](https://pkg.go.dev/github.com/nkmr-jp/zl)
 [![test](https://github.com/nkmr-jp/zl/actions/workflows/test.yml/badge.svg)](https://github.com/nkmr-jp/zl/actions/workflows/test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nkmr-jp/zl)](https://goreportcard.com/report/github.com/nkmr-jp/zl)
-[![codecov](https://codecov.io/gh/nkmr-jp/zl/branch/develop/graph/badge.svg?token=2Z6M2JYT17)](https://codecov.io/gh/nkmr-jp/zl)
+[![codecov](https://codecov.io/gh/nkmr-jp/zl/branch/main/graph/badge.svg?token=2Z6M2JYT17)](https://codecov.io/gh/nkmr-jp/zl)
 
 zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
 
