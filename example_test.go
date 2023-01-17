@@ -230,6 +230,22 @@ func ExampleSetLevelByString() {
 	// {"severity":"INFO","message":"INFO_MESSAGE"}
 }
 
+func ExampleSetOmitKeys() {
+	zl.Cleanup() // removes logger and resets settings.
+
+	zl.SetOutputByString("Console")
+	zl.SetStdout()
+	zl.SetOmitKeys(
+		zl.MessageKey, zl.LevelKey, zl.LoggerKey, zl.TimeKey,
+		zl.CallerKey, zl.VersionKey, zl.HostnameKey, zl.StacktraceKey, zl.PIDKey,
+	)
+	zl.Init()
+	zl.Info("INFO_MESSAGE")
+
+	// Output:
+	// {"function":"github.com/nkmr-jp/zl_test.ExampleSetOmitKeys"}
+}
+
 func ExampleError() {
 	zl.Cleanup() // removes logger and resets settings.
 	zl.SetOmitKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey)
@@ -266,7 +282,7 @@ func ExampleDump() {
 func ExampleSyncWhenStop() {
 	zl.Cleanup() // removes logger and resets settings.
 	zl.SetLevel(zl.DebugLevel)
-	zl.SetRotateFileName("./log/example-Dump.jsonl")
+	zl.SetRotateFileName("./log/example-SyncWhenStop.jsonl")
 	zl.Init()
 	defer zl.Sync()
 	zl.SyncWhenStop()
