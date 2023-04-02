@@ -66,3 +66,9 @@ func TestSetLevelByString(t *testing.T) {
 		})
 	}
 }
+
+func TestSetSeparator(t *testing.T) {
+	Cleanup()
+	SetSeparator(":")
+	assert.Equal(t, ":", separator)
+}
