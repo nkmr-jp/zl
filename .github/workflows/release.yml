@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 20
       - name: Install jq yq
         run: |
           sudo wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O /usr/bin/jq &&\
@@ -25,7 +25,7 @@ jobs:
           yq --version
       - name: Install gitmoji-semver
         run: |
-          git clone https://github.com/nkmr-jp/gitmoji-semver -b v2.0.0
+          git clone https://github.com/nkmr-jp/gitmoji-semver -b v2.0.5
       - name: Generate semantic-release configs
         working-directory: ./gitmoji-semver
         run: |
