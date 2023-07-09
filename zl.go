@@ -36,13 +36,18 @@ var (
 	isStdOut       bool
 	separator      = " "
 	pid            int
+	isTest         bool
 )
 
 type fatalHook struct{}
 
 func (f fatalHook) OnWrite(_ *zapcore.CheckedEntry, _ []zapcore.Field) {
 	pretty.showErrorReport()
-	os.Exit(1)
+	if isTest {
+		fmt.Println("os.Exit(1) called.")
+	} else {
+		os.Exit(1)
+	}
 }
 
 // Init initializes the logger.
@@ -50,7 +55,7 @@ func Init() {
 	once.Do(func() {
 		encoderConfig = newEncoderConfig()
 		zapLogger = newLogger(encoderConfig)
-		if outputType == PrettyOutput {
+		if outputType == PrettyOutput || isTest {
 			pretty = newPrettyLogger()
 			zapLogger = zapLogger.WithOptions(zap.WithFatalHook(fatalHook{}))
 		}
@@ -255,4 +260,9 @@ func Cleanup() {
 	maxAge = 0
 	localTime = false
 	compress = false
+}
+
+// SetIsTest sets isTest flag to true.
+func SetIsTest() {
+	isTest = true
 }
