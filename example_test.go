@@ -20,6 +20,7 @@ func TestMain(m *testing.M) {
 	if err := os.RemoveAll("./log"); err != nil {
 		log.Fatal(err)
 	}
+	zl.SetIsTest()
 	m.Run()
 }
 
@@ -55,28 +56,37 @@ func Example() {
 	zl.ErrorErr("READ_FILE_ERROR", err) // same to above.
 	zl.Err("READ_FILE_ERROR", err)      // same to above.
 	zl.ErrRet("READ_FILE_ERROR", err)   // write error to log and return same error.
+	zl.Fatal("READ_FILE_ERROR", zap.Error(err))
+	zl.FatalErr("READ_FILE_ERROR", err) // same to above.
 
+	fmt.Println("\nlog file output:")
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:80: DEBUG INIT_LOGGER Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl
-	// example_test.go:39: INFO USER_INFO
-	// example_test.go:42: INFO DISPLAY_TO_CONSOLE display to console when output type is pretty
-	// example_test.go:43: INFO DISPLAY_TO_CONSOLE display to console when output type is pretty
-	// example_test.go:44: INFO DISPLAY_TO_CONSOLE message: display to console when output type is pretty
-	// example_test.go:48: INFO READ_FILE_ERROR
-	// example_test.go:49: INFO READ_FILE_ERROR open test: no such file or directory
-	// example_test.go:50: DEBUG READ_FILE_ERROR
-	// example_test.go:51: DEBUG READ_FILE_ERROR open test: no such file or directory
-	// example_test.go:52: WARN READ_FILE_ERROR
-	// example_test.go:53: WARN READ_FILE_ERROR open test: no such file or directory
-	// example_test.go:54: ERROR READ_FILE_ERROR
-	// example_test.go:55: ERROR READ_FILE_ERROR open test: no such file or directory
-	// example_test.go:56: ERROR READ_FILE_ERROR open test: no such file or directory
-	// example_test.go:57: ERROR READ_FILE_ERROR open test: no such file or directory
+	// zl.go:82: DEBUG INIT_LOGGER:Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl
+	// example_test.go:40: INFO USER_INFO
+	// example_test.go:43: INFO DISPLAY_TO_CONSOLE:display to console when output type is pretty
+	// example_test.go:44: INFO DISPLAY_TO_CONSOLE:display to console when output type is pretty
+	// example_test.go:45: INFO DISPLAY_TO_CONSOLE:message: display to console when output type is pretty
+	// example_test.go:49: INFO READ_FILE_ERROR
+	// example_test.go:50: INFO READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:51: DEBUG READ_FILE_ERROR
+	// example_test.go:52: DEBUG READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:53: WARN READ_FILE_ERROR
+	// example_test.go:54: WARN READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:55: ERROR READ_FILE_ERROR
+	// example_test.go:56: ERROR READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:57: ERROR READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:58: ERROR READ_FILE_ERROR:open test: no such file or directory
+	// example_test.go:59: FATAL READ_FILE_ERROR
+	// example_test.go:60: FATAL READ_FILE_ERROR:open test: no such file or directory
 
 	// Output:
+	// os.Exit(1) called.
+	// os.Exit(1) called.
+	//
+	// log file output:
 	// {"severity":"DEBUG","function":"github.com/nkmr-jp/zl.Init.func1","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example.jsonl"}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"USER_INFO","user_name":"Alice","user_age":20}
 	// {"severity":"INFO","function":"github.com/nkmr-jp/zl_test.Example","message":"DISPLAY_TO_CONSOLE","console":"display to console when output type is pretty"}
@@ -92,6 +102,8 @@ func Example() {
 	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
 	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
 	// {"severity":"ERROR","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"FATAL","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
+	// {"severity":"FATAL","function":"github.com/nkmr-jp/zl_test.Example","message":"READ_FILE_ERROR","error":"open test: no such file or directory"}
 }
 
 func ExampleSetVersion() {
@@ -125,9 +137,9 @@ func ExampleSetVersion() {
 	fmt.Println(string(bytes))
 
 	// Output:
-	// {"severity":"DEBUG","caller":"zl/zl.go:77","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
-	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L121","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L122","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"DEBUG","caller":"zl/zl.go:82","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L133","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L134","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 
 }
 
@@ -175,7 +187,10 @@ func ExampleNew() {
 	l2.InfoErr("TEST", err)
 	l2.DebugErr("TEST", err)
 	l2.WarnErr("TEST", err)
+	l2.Fatal("TEST")
+	l2.FatalErr("TEST", err)
 
+	fmt.Println("\nlog file output:")
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
@@ -196,6 +211,10 @@ func ExampleNew() {
 	// log2 | example_test.go:157: WARN TEST error c7mg6hnr2g4l6vvuao50
 
 	// Output:
+	// os.Exit(1) called.
+	// os.Exit(1) called.
+	//
+	// log file output:
 	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl"}
 	// {"severity":"INFO","message":"GLOBAL_INFO"}
 	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
@@ -203,13 +222,15 @@ func ExampleNew() {
 	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"DEBUG","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"INFO","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"DEBUG","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 	// {"severity":"WARN","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"FATAL","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"FATAL","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 }
 
 func ExampleSetLevelByString() {

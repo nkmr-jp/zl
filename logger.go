@@ -17,9 +17,14 @@ type Logger struct {
 // New can add additional default fields.
 // e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 func New(fields ...zap.Field) *Logger {
+	l := newLogger(encoderConfig)
+	if outputType == PrettyOutput || isTest {
+		pretty = newPrettyLogger()
+		l = l.WithOptions(zap.WithFatalHook(fatalHook{}))
+	}
 	return &Logger{
 		pretty:    newPrettyLogger(),
-		zapLogger: newLogger(encoderConfig),
+		zapLogger: l,
 		fields:    fields,
 	}
 }
@@ -49,12 +54,12 @@ func (l *Logger) Warn(message string, fields ...zap.Field) {
 
 func (l *Logger) Error(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
-	l.logger(message, ErrorLevel, fields).Warn(message, fields...)
+	l.logger(message, ErrorLevel, fields).Error(message, fields...)
 }
 
 func (l *Logger) Fatal(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
-	l.logger(message, FatalLevel, fields).Warn(message, fields...)
+	l.logger(message, FatalLevel, fields).Fatal(message, fields...)
 }
 
 func (l *Logger) DebugErr(message string, err error, fields ...zap.Field) {
