@@ -265,6 +265,7 @@ func ResetGlobalLoggerSettings() {
 
 // Cleanup
 // Deprecated: Use ResetGlobalLoggerSettings instead.
+// # codecov ignore
 func Cleanup() {
 	ResetGlobalLoggerSettings()
 }
