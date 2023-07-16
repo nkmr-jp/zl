@@ -42,7 +42,7 @@ func TestSetLevel(t *testing.T) {
 		t.Run(tt.String(), func(t *testing.T) {
 			SetLevel(tt)
 			assert.Equal(t, tt, severityLevel)
-			Cleanup()
+			ResetGlobalLoggerSettings()
 		})
 	}
 }
@@ -62,13 +62,13 @@ func TestSetLevelByString(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			SetLevelByString(tt.in)
 			assert.Equal(t, tt.out, severityLevel)
-			Cleanup()
+			ResetGlobalLoggerSettings()
 		})
 	}
 }
 
 func TestSetSeparator(t *testing.T) {
-	Cleanup()
+	ResetGlobalLoggerSettings()
 	SetSeparator(":")
 	assert.Equal(t, ":", separator)
 }
