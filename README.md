@@ -6,26 +6,35 @@
 
 zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
 
-Its design focuses on the developer experience and is easy to use.
-It is ideal for developing applications, APIs, and command line tools.
+zl is a logging package designed with the developer experience in mind.
+You can choose the most suitable output format according to your purpose, such as emphasizing easy-to-read console output during development in a local environment and outputting structured detailed logs in a production environment.
+It offers rich functionality but is easy to configure.
+
+This is useful when developing systems that perform complex processing.
 
 # Features
-## Selectable output types
+## Selectable output format
 ### PrettyOutput (Default) :technologist: 
 - High Developer Experience.
 - The optimal setting for a development environment.
 - Output colored simple logs to the console.
-- Output detail JSON logs to logfile.
+- Output detail JSON logs to the logfile.
 - Easy-to-read error reports and stack trace.
 - It can jumps directly to the line of the file that is output to the console log (when using Goland or VSCode).
 
 ![image](https://user-images.githubusercontent.com/8490118/185822142-4667200b-8087-49f0-9e41-68ebb1731985.png)
 
-
+Log messages do not have to be written in upper snake case, 
+but if messages are written in a uniform manner, 
+it is easy to extract specific logs using tools such as [Google Cloud Logging](https://cloud.google.com/logging) or the [jq command](https://stedolan.github.io/jq/).
+It is recommended that log messages be written in a consistent manner.
+By writing log messages succinctly and placing detailed information in separate fields, 
+the overall clarity of the logs is improved, making it easier to understand the flow of processes.
 
 ### ConsoleOutput :zap:
 - High Performance.
 - The optimal setting for a production environment.
+- Output detail JSON logs to the console.
 - Especially suitable for cloud environments such as [Google Cloud Logging](https://cloud.google.com/logging) or [Datadog](https://www.datadoghq.com/).
 - It is fast because it uses only the functions provided by [zap](https://github.com/uber-go/zap#performance) (**not sugared**) and does not perform any extra processing.
 
@@ -37,7 +46,7 @@ It is ideal for developing applications, APIs, and command line tools.
 ### ConsoleAndFileOutput
 - It is a setting for the development environment.
 - Output detail JSON logs to console and logfile.
-- It is recommended to use with [jq](https://stedolan.github.io/jq/) to avoid drowning in a sea of information.
+- It is recommended to use with [jq command](https://stedolan.github.io/jq/) to avoid drowning in a sea of information.
 - It is recommended to set PrettyOutput instead.
 
 
