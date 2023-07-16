@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/nkmr-jp/zl)](https://goreportcard.com/report/github.com/nkmr-jp/zl)
 [![codecov](https://codecov.io/gh/nkmr-jp/zl/branch/main/graph/badge.svg?token=2Z6M2JYT17)](https://codecov.io/gh/nkmr-jp/zl)
 
-zl provides [zap-based](https://github.com/uber-go/zap) advanced logging features.
+zl is a logger based on [zap](https://github.com/uber-go/zap). It provides advanced logging features.
 
 zl is a logging package designed with the developer experience in mind.
 You can choose the most suitable output format according to your purpose, such as emphasizing easy-to-read console output during development in a local environment and outputting structured detailed logs in a production environment.
