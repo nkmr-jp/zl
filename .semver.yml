@@ -8,8 +8,8 @@ branches: [ main ]
 semver:
   #  minor:
   #    - lipstick
-  #  patch:
-  #    - art
+  patch:
+    - memo
   #  none: # gitmoji.json "semver": null is convert to none
   #    - pencil2
   ignore: # not add in release-template.hbs
