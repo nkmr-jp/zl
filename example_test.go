@@ -3,12 +3,10 @@ package zl_test
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"testing"
-
 	"github.com/nkmr-jp/zl"
 	"go.uber.org/zap"
+	"log"
+	"os"
 )
 
 var (
@@ -16,15 +14,17 @@ var (
 	srcRootDir string // srcRootDir set from cli.
 )
 
-func TestMain(m *testing.M) {
+func setupForExampleTest() {
 	if err := os.RemoveAll("./log"); err != nil {
 		log.Fatal(err)
 	}
+	zl.ResetGlobalLoggerSettings() // removes logger and resets settings.
 	zl.SetIsTest()
-	m.Run()
 }
 
 func Example() {
+	setupForExampleTest()
+
 	// Set options
 	fileName := "./log/example.jsonl"
 	zl.SetLevel(zl.DebugLevel)
@@ -107,7 +107,7 @@ func Example() {
 }
 
 func ExampleSetVersion() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
 
 	urlFormat := "https://github.com/nkmr-jp/zl/blob/%s"
 
@@ -144,7 +144,7 @@ func ExampleSetVersion() {
 }
 
 func ExampleNew() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
 
 	// Set options
 	traceIDField := "trace"
@@ -234,7 +234,7 @@ func ExampleNew() {
 }
 
 func ExampleSetLevelByString() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
 
 	zl.SetLevelByString("DEBUG")
 	zl.SetOutputByString("Console")
@@ -252,7 +252,7 @@ func ExampleSetLevelByString() {
 }
 
 func ExampleSetOmitKeys() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
 
 	zl.SetOutputByString("Console")
 	zl.SetStdout()
@@ -268,7 +268,8 @@ func ExampleSetOmitKeys() {
 }
 
 func ExampleError() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
+
 	zl.SetOmitKeys(zl.TimeKey, zl.VersionKey, zl.HostnameKey)
 
 	// Initialize
@@ -291,7 +292,8 @@ func ExampleError() {
 }
 
 func ExampleDump() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
+
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetRotateFileName("./log/example-Dump.jsonl")
 	zl.Init()
@@ -301,7 +303,8 @@ func ExampleDump() {
 }
 
 func ExampleSyncWhenStop() {
-	zl.Cleanup() // removes logger and resets settings.
+	setupForExampleTest()
+
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetRotateFileName("./log/example-SyncWhenStop.jsonl")
 	zl.Init()

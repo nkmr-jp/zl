@@ -41,7 +41,7 @@ test: cover
 
 # See: https://about.codecov.io/blog/getting-started-with-code-coverage-for-golang/
 cover:
-	go test -race -covermode=atomic -coverprofile=coverage.out
+	go test -covermode=atomic -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 
 lint:

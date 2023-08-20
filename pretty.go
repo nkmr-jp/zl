@@ -84,7 +84,7 @@ func (l *prettyLogger) consoleMsg(fields []zap.Field) string {
 		for i2 := range consoleFields {
 			if consoleFields[i2] == fields[i].Key {
 				var val string
-				if fields[i].String != "" {
+				if fields[i].Type == zapcore.StringType {
 					val = fields[i].String
 				} else {
 					val = strconv.Itoa(int(fields[i].Integer))

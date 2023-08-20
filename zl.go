@@ -239,8 +239,9 @@ func getConsoleOutput() io.Writer {
 	}
 }
 
-// Cleanup removes logger and resets settings. This is mainly used for testing etc.
-func Cleanup() {
+// ResetGlobalLoggerSettings resets global logger settings.
+// This is convenient for use in tests, etc.
+func ResetGlobalLoggerSettings() {
 	once = sync.Once{}
 	pretty = nil
 	zapLogger = nil
@@ -260,6 +261,13 @@ func Cleanup() {
 	maxAge = 0
 	localTime = false
 	compress = false
+}
+
+// Cleanup
+// Deprecated: Use ResetGlobalLoggerSettings instead.
+// # codecov ignore
+func Cleanup() {
+	ResetGlobalLoggerSettings()
 }
 
 // SetIsTest sets isTest flag to true.
