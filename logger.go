@@ -18,7 +18,7 @@ type Logger struct {
 // e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 func New(fields ...zap.Field) *Logger {
 	l := newLogger(encoderConfig)
-	if outputType == PrettyOutput || isTest {
+	if outputType == PrettyOutput {
 		pretty = newPrettyLogger()
 		l = l.WithOptions(zap.WithFatalHook(fatalHook{}))
 	}
@@ -29,12 +29,28 @@ func New(fields ...zap.Field) *Logger {
 	}
 }
 
+func (l *Logger) clone() *Logger {
+	copy := *l
+	return &copy
+}
+
+// Named is wrapper of Zap's Named.
+// Returns a new Logger without overwriting the existing logger.
+//
+// Named adds a new path segment to the logger's name. Segments are joined by
+// periods. By default, Loggers are unnamed.
+// e.g. logger.Named("foo").Named("bar") returns a logger named "foo.bar".
 func (l *Logger) Named(loggerName string) *Logger {
-	if l.pretty != nil {
-		l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
+	if loggerName == "" {
+		return l
 	}
-	l.zapLogger = l.zapLogger.Named(loggerName)
-	return l
+	clone := l.clone()
+	clone.zapLogger = clone.zapLogger.Named(loggerName)
+	if outputType == PrettyOutput {
+		clone.pretty = newPrettyLogger()
+		clone.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", clone.zapLogger.Name()))
+	}
+	return clone
 }
 
 func (l *Logger) Debug(message string, fields ...zap.Field) {

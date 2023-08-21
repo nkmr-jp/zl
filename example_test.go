@@ -162,53 +162,54 @@ func ExampleNew() {
 
 	// New
 	// e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
-	l1 := zl.New(
+	log := zl.New(
 		zap.Int("user_id", 1),
 		zap.String(traceIDField, traceID),
-	).Named("log1")
-
-	l2 := zl.New(
-		zap.Int("user_id", 1),
-		zap.String(traceIDField, traceID),
-	).Named("log2")
+	)
+	emptyName := log.Named("")
+	named1 := log.Named("named1")
+	named2 := log.Named("named2")
+	named3 := named1.Named("named3") // named1.named3
 
 	// Write logs
 	err := fmt.Errorf("error")
 	zl.Info("GLOBAL_INFO")
-	l1.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
-	l1.Err("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
-	l2.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
-	l2.Debug("TEST")
-	l2.Warn("TEST")
-	l2.Error("TEST")
-	l2.Err("TEST", err)
-	l2.ErrorErr("TEST", err)
-	l2.ErrRet("TEST", err) // write error to log and return same error.
-	l2.InfoErr("TEST", err)
-	l2.DebugErr("TEST", err)
-	l2.WarnErr("TEST", err)
-	l2.Fatal("TEST")
-	l2.FatalErr("TEST", err)
+	log.Info("CONTEXT_SCOPE_INFO", zl.Consolef("some message to console: %s", "test"))
+	emptyName.Err("CONTEXT_SCOPE_ERROR", fmt.Errorf("context scope error message"))
+	named1.Info("CONTEXT_SCOPE_INFO2", zl.Consolef("some message to console: %s", "test"))
+	named2.Debug("TEST")
+	named3.Warn("TEST")
+	log.Error("TEST")
+	named1.Err("TEST", err)
+	named2.ErrorErr("TEST", err)
+	named3.ErrRet("TEST", err) // write error to log and return same error.
+	log.InfoErr("TEST", err)
+	named1.DebugErr("TEST", err)
+	named2.WarnErr("TEST", err)
+	named3.Fatal("TEST")
+	log.FatalErr("TEST", err)
 
 	fmt.Println("\nlog file output:")
 	bytes, _ := os.ReadFile(fileName)
 	fmt.Println(string(bytes))
 
 	// Output to stderr with colored:
-	// zl.go:77: DEBUG INIT_LOGGER Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl
-	// example_test.go:145: INFO GLOBAL_INFO
-	// log1 | example_test.go:146: INFO CONTEXT_SCOPE_INFO some message to console: test c7mg6hnr2g4l6vvuao50
-	// log1 | example_test.go:147: ERROR CONTEXT_SCOPE_ERROR context scope error message c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:148: INFO CONTEXT_SCOPE_INFO2 some message to console: test c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:149: DEBUG TEST c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:150: WARN TEST c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:151: ERROR TEST c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:152: ERROR TEST error c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:153: ERROR TEST error c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:154: ERROR TEST error c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:155: INFO TEST error c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:156: DEBUG TEST error c7mg6hnr2g4l6vvuao50
-	// log2 | example_test.go:157: WARN TEST error c7mg6hnr2g4l6vvuao50
+	// zl.go:82: DEBUG INIT_LOGGER Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl
+	// example_test.go:176: INFO GLOBAL_INFO
+	// example_test.go:177: INFO CONTEXT_SCOPE_INFO some message to console: test c7mg6hnr2g4l6vvuao50
+	// example_test.go:178: ERROR CONTEXT_SCOPE_ERROR context scope error message c7mg6hnr2g4l6vvuao50
+	// named1 | example_test.go:179: INFO CONTEXT_SCOPE_INFO2 some message to console: test c7mg6hnr2g4l6vvuao50
+	// named2 | example_test.go:180: DEBUG TEST c7mg6hnr2g4l6vvuao50
+	// named1.named3 | example_test.go:181: WARN TEST c7mg6hnr2g4l6vvuao50
+	// example_test.go:182: ERROR TEST c7mg6hnr2g4l6vvuao50
+	// named1 | example_test.go:183: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// named2 | example_test.go:184: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// named1.named3 | example_test.go:185: ERROR TEST error c7mg6hnr2g4l6vvuao50
+	// example_test.go:186: INFO TEST error c7mg6hnr2g4l6vvuao50
+	// named1 | example_test.go:187: DEBUG TEST error c7mg6hnr2g4l6vvuao50
+	// named2 | example_test.go:188: WARN TEST error c7mg6hnr2g4l6vvuao50
+	// named1.named3 | example_test.go:189: FATAL TEST c7mg6hnr2g4l6vvuao50
+	// example_test.go:190: FATAL TEST error c7mg6hnr2g4l6vvuao50
 
 	// Output:
 	// os.Exit(1) called.
@@ -217,20 +218,20 @@ func ExampleNew() {
 	// log file output:
 	// {"severity":"DEBUG","message":"INIT_LOGGER","console":"Severity: DEBUG, Output: Pretty, File: ./log/example-new.jsonl"}
 	// {"severity":"INFO","message":"GLOBAL_INFO"}
-	// {"severity":"INFO","logger":"log1","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log1","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"INFO","logger":"log2","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"DEBUG","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"WARN","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"ERROR","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"INFO","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"DEBUG","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"WARN","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"FATAL","logger":"log2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
-	// {"severity":"FATAL","logger":"log2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","message":"CONTEXT_SCOPE_INFO","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","message":"CONTEXT_SCOPE_ERROR","error":"context scope error message","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","logger":"named1","message":"CONTEXT_SCOPE_INFO2","console":"some message to console: test","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"DEBUG","logger":"named2","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"WARN","logger":"named1.named3","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"named1","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"named2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"ERROR","logger":"named1.named3","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"INFO","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"DEBUG","logger":"named1","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"WARN","logger":"named2","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"FATAL","logger":"named1.named3","message":"TEST","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
+	// {"severity":"FATAL","message":"TEST","error":"error","user_id":1,"trace":"c7mg6hnr2g4l6vvuao50"}
 }
 
 func ExampleSetLevelByString() {
