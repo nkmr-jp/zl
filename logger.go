@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Logger is a wrapper of Zap's Logger.
 type Logger struct {
 	pretty    *prettyLogger
 	zapLogger *zap.Logger
@@ -18,7 +19,7 @@ type Logger struct {
 // e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 func New(fields ...zap.Field) *Logger {
 	l := newLogger(encoderConfig)
-	if outputType == PrettyOutput || isTest {
+	if outputType == PrettyOutput {
 		pretty = newPrettyLogger()
 		l = l.WithOptions(zap.WithFatalHook(fatalHook{}))
 	}
@@ -29,70 +30,103 @@ func New(fields ...zap.Field) *Logger {
 	}
 }
 
-func (l *Logger) Named(loggerName string) *Logger {
-	if l.pretty != nil {
-		l.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", loggerName))
-	}
-	l.zapLogger = l.zapLogger.Named(loggerName)
-	return l
+func (l *Logger) clone() *Logger {
+	copy := *l
+	return &copy
 }
 
+// Named is wrapper of Zap's Named.
+// Returns a new Logger without overwriting the existing logger.
+//
+// Named adds a new path segment to the logger's name. Segments are joined by
+// periods. By default, Loggers are unnamed.
+// e.g. logger.Named("foo").Named("bar") returns a logger named "foo.bar".
+func (l *Logger) Named(loggerName string) *Logger {
+	if loggerName == "" {
+		return l
+	}
+	clone := l.clone()
+	clone.zapLogger = clone.zapLogger.Named(loggerName)
+	if outputType == PrettyOutput {
+		clone.pretty = newPrettyLogger()
+		clone.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", clone.zapLogger.Name()))
+	}
+	return clone
+}
+
+// Debug is wrapper of Zap's Debug.
 func (l *Logger) Debug(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, DebugLevel, fields).Debug(message, fields...)
 }
 
+// Info is wrapper of Zap's Info.
 func (l *Logger) Info(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, InfoLevel, fields).Info(message, fields...)
 }
 
+// Warn is wrapper of Zap's Warn.
 func (l *Logger) Warn(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, WarnLevel, fields).Warn(message, fields...)
 }
 
+// Error is wrapper of Zap's Error.
 func (l *Logger) Error(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, ErrorLevel, fields).Error(message, fields...)
 }
 
+// Fatal is wrapper of Zap's Fatal.
 func (l *Logger) Fatal(message string, fields ...zap.Field) {
 	fields = append(fields, l.fields...)
 	l.logger(message, FatalLevel, fields).Fatal(message, fields...)
 }
 
+// DebugErr is Outputs a DEBUG log with error field.
 func (l *Logger) DebugErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, DebugLevel, err, fields).Debug(message, fields...)
 }
 
+// InfoErr is Outputs INFO log with error field.
 func (l *Logger) InfoErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, InfoLevel, err, fields).Info(message, fields...)
 }
 
+// WarnErr is Outputs WARN log with error field.
 func (l *Logger) WarnErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, WarnLevel, err, fields).Warn(message, fields...)
 }
 
+// ErrorErr is Outputs ERROR log with error field.
 func (l *Logger) ErrorErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
+// Err is alias of ErrorErr.
 func (l *Logger) Err(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 }
 
+// ErrRet write error log and return error.
+// A typical usage would be something like.
+//
+//	if err != nil {
+//	  return zl.ErrRet("SOME_ERROR", fmt.Error("some message err: %w",err))
+//	}
 func (l *Logger) ErrRet(message string, err error, fields ...zap.Field) error {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, ErrorLevel, err, fields).Error(message, fields...)
 	return err
 }
 
+// FatalErr is Outputs ERROR log with error field.
 func (l *Logger) FatalErr(message string, err error, fields ...zap.Field) {
 	fields = append(append(fields, zap.Error(err)), l.fields...)
 	l.loggerErr(message, FatalLevel, err, fields).Fatal(message, fields...)
