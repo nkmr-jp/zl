@@ -163,8 +163,17 @@ func GetVersion() string {
 	return "undefined"
 }
 
-// Sync logger of Zap's Sync.
-// Note: If log output to console. error will occur (See: https://github.com/uber-go/zap/issues/880 )
+// Sync is wrapper of Zap's Sync.
+//
+// Flushes any buffered log entries.(See: https://pkg.go.dev/go.uber.org/zap#Logger.Sync)
+// Applications should take care to call Sync before exiting.
+//
+// Also displays an error report with a formatted stack trace if the outputType is PrettyOutput.
+// This is useful for finding the source of errors during development.
+//
+// An error will occur if zap's Sync is executed when the output destination is console.
+// (See: https://github.com/uber-go/zap/issues/880 )
+// Therefore, Sync is executed only when console is not included in the zap output destination.
 func Sync() {
 	if outputType != PrettyOutput && outputType != FileOutput {
 		return
