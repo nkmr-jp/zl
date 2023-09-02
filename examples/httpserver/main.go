@@ -78,6 +78,7 @@ func initGlobalLogger() {
 	default:
 		log.Fatal("ENV is not set")
 	}
+	zl.SetOmitKeys(zl.HostnameKey)
 	zl.SetConsoleFields(TraceIDFieldKey, DurationFieldKey) // Set fields to be output to console
 	zl.Init()                                              // Initialize global logger
 }
