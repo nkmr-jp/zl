@@ -18,21 +18,21 @@ type Logger struct {
 // New can add additional default fields.
 // e.g. Use this when you want to add a common value in the scope of a context, such as an API request.
 func New(fields ...zap.Field) *Logger {
-	l := newLogger(encoderConfig)
-	if outputType == PrettyOutput {
-		pretty = newPrettyLogger()
-		l = l.WithOptions(zap.WithFatalHook(fatalHook{}))
-	}
-	return &Logger{
-		pretty:    newPrettyLogger(),
-		zapLogger: l,
+	ret := &Logger{
+		pretty:    pretty,
+		zapLogger: newLogger(encoderConfig),
 		fields:    fields,
 	}
+	if outputType == PrettyOutput {
+		ret.zapLogger = ret.zapLogger.WithOptions(zap.WithFatalHook(fatalHook{}))
+	}
+	return ret
 }
 
+// clone creates and returns a shallow copy of the calling Logger instance.
 func (l *Logger) clone() *Logger {
-	copy := *l
-	return &copy
+	ret := *l
+	return &ret
 }
 
 // Named is wrapper of Zap's Named.
