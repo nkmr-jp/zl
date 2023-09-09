@@ -208,7 +208,12 @@ func SyncWhenStop() {
 
 		iDebug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
 		Sync() // flush log buffer
-		os.Exit(128 + sigCode)
+
+		if isTest {
+			fmt.Printf("os.Exit(%d) called.", 128+sigCode)
+		} else {
+			os.Exit(128 + sigCode)
+		}
 	}()
 }
 
