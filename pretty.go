@@ -119,12 +119,13 @@ func (l *prettyLogger) coloredLevel(level zapcore.Level) au.Value {
 	return au.BrightBlack("")
 }
 
-func (l *prettyLogger) showErrorReport() {
+// showErrorReport writes the colored error report to console.
+func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 	if lo.Contains(omitKeys, StacktraceKey) && lo.Contains(omitKeys, PIDKey) {
 		return
 	}
 
-	fp, err := os.Open(fileName)
+	fp, err := os.Open(fileNameValue)
 	if err != nil {
 		return
 	}
@@ -135,12 +136,12 @@ func (l *prettyLogger) showErrorReport() {
 		}
 	}(fp)
 
-	count, traces := l.scanStackTraces(fp)
-	l.printTraces(count, traces)
+	count, traces := l.scanStackTraces(fp, pidValue)
+	l.printTraces(count, traces, pidValue)
 }
 
 // nolint:funlen
-func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
+func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string) {
 	scanner := bufio.NewScanner(fp)
 	var traces, key string
 	var groups []*ErrorGroup
@@ -155,7 +156,7 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
 			continue
 		}
-		if errorLog.Stacktrace == "" || errorLog.Pid != pid {
+		if errorLog.Stacktrace == "" || errorLog.Pid != pidValue {
 			continue
 		}
 		key = fmt.Sprintf("severity:%s,message:%s,caller:%s,error:%s",
@@ -186,23 +187,17 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	return len(groups), traces
 }
 
-func (l *prettyLogger) printTraces(count int, traces string) {
+func (l *prettyLogger) printTraces(count int, traces string, pidValue int) {
 	var head string
 	if count == 0 {
 		return
 	}
 	head += au.Red("ERROR REPORT\n").Bold().String()
 	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
-	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
+	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pidValue)
 	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
-	if isStdOut {
-		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
-			return
-		}
-	} else {
-		if _, err := fmt.Fprint(os.Stderr, output); err != nil {
-			return
-		}
+	if _, err := fmt.Fprint(l.Logger.Writer(), output); err != nil {
+		return
 	}
 }
 

@@ -42,7 +42,7 @@ var (
 type fatalHook struct{}
 
 func (f fatalHook) OnWrite(_ *zapcore.CheckedEntry, _ []zapcore.Field) {
-	pretty.showErrorReport()
+	pretty.showErrorReport(fileName, pid)
 	if isTest {
 		fmt.Println("os.Exit(1) called.")
 	} else {
@@ -182,7 +182,7 @@ func Sync() {
 		log.Println(err)
 	}
 	if outputType == PrettyOutput {
-		pretty.showErrorReport()
+		pretty.showErrorReport(fileName, pid)
 	}
 }
 
