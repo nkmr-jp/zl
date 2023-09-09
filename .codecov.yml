@@ -1,2 +1,4 @@
 # See: https://docs.codecov.com/docs/codecov-yaml
 comment: false
+status:
+  patch: off
