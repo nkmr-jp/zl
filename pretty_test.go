@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -17,19 +18,22 @@ func Test_newPrettyLogger(t *testing.T) {
 		name           string
 		setOutputType  Output
 		setOmitKeys    []Key
-		setIsStdOut    bool
+		out            io.Writer
 		expectedOutput *os.File
 		expectedFlags  int
 		expectedNil    bool
 	}{
 		{
-			name:          "not PrettyOutput type",
-			setOutputType: ConsoleOutput,
-			expectedNil:   true,
+			name:           "not PrettyOutput type",
+			setOutputType:  ConsoleOutput,
+			out:            os.Stderr,
+			expectedOutput: os.Stderr,
+			expectedNil:    true,
 		},
 		{
 			name:           "not set options",
 			setOutputType:  PrettyOutput,
+			out:            os.Stderr,
 			expectedOutput: os.Stderr,
 			expectedFlags:  log.Ldate | log.Ltime | log.Lshortfile,
 		},
@@ -37,6 +41,7 @@ func Test_newPrettyLogger(t *testing.T) {
 			name:           "set omitKeys",
 			setOutputType:  PrettyOutput,
 			setOmitKeys:    []Key{TimeKey},
+			out:            os.Stderr,
 			expectedOutput: os.Stderr,
 			expectedFlags:  log.Lshortfile,
 		},
@@ -44,7 +49,7 @@ func Test_newPrettyLogger(t *testing.T) {
 			name:           "set isStdOut and omitKeys",
 			setOutputType:  PrettyOutput,
 			setOmitKeys:    []Key{TimeKey},
-			setIsStdOut:    true,
+			out:            os.Stdout,
 			expectedOutput: os.Stdout,
 			expectedFlags:  log.Lshortfile,
 		},
@@ -55,10 +60,9 @@ func Test_newPrettyLogger(t *testing.T) {
 			// Setup
 			outputType = tt.setOutputType
 			omitKeys = tt.setOmitKeys
-			isStdOut = tt.setIsStdOut
 
 			// Execute
-			logger := newPrettyLogger()
+			logger := newPrettyLogger(tt.out)
 
 			// Assert
 			if tt.expectedNil {
@@ -74,29 +78,62 @@ func Test_newPrettyLogger(t *testing.T) {
 
 func Test_prettyLogger_log(t *testing.T) {
 	tests := []struct {
-		level       zapcore.Level
-		message     string
-		expectedMsg string
+		severityLevel zapcore.Level
+		level         zapcore.Level
+		message       string
+		expectedMsg   string
 	}{
-		{zapcore.DebugLevel, "Debug Message", "\u001B[90mDEBUG\u001B[0m \u001B[2mDebug Message\u001B[0m"},
-		{zapcore.InfoLevel, "Info Message", "\u001B[94mINFO\u001B[0m Info Message"},
-		{zapcore.WarnLevel, "Warn Message", "\u001B[33mWARN\u001B[0m Warn Message"},
-		{zapcore.ErrorLevel, "Error Message", "\u001B[31mERROR\u001B[0m Error Message"},
-		{zapcore.FatalLevel, "Fatal Message", "\u001B[31mFATAL\u001B[0m Fatal Message"},
+		{
+			zapcore.DebugLevel,
+			zapcore.DebugLevel,
+			"Debug Message",
+			"\u001B[90mDEBUG\u001B[0m \u001B[2mDebug Message\u001B[0m",
+		},
+		{
+			zapcore.DebugLevel,
+			zapcore.InfoLevel,
+			"Info Message",
+			"\u001B[94mINFO\u001B[0m Info Message",
+		},
+		{
+			zapcore.DebugLevel,
+			zapcore.WarnLevel,
+			"Warn Message",
+			"\u001B[33mWARN\u001B[0m Warn Message",
+		},
+		{
+			zapcore.DebugLevel,
+			zapcore.ErrorLevel,
+			"Error Message",
+			"\u001B[31mERROR\u001B[0m Error Message",
+		},
+		{
+			zapcore.DebugLevel,
+			zapcore.FatalLevel,
+			"Fatal Message",
+			"\u001B[31mFATAL\u001B[0m Fatal Message",
+		},
+		{
+			zapcore.ErrorLevel,
+			zapcore.InfoLevel,
+			"Debug Message",
+			"",
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.level.String()+"_Level", func(t *testing.T) {
+		t.Run(tt.severityLevel.String()+"_"+tt.level.String()+"_Level", func(t *testing.T) {
 			outputType = PrettyOutput
-			severityLevel = tt.level
+			omitKeys = []Key{TimeKey}
+			severityLevel = tt.severityLevel
 
 			var buf bytes.Buffer
-			logger := &prettyLogger{
-				Logger: log.New(&buf, "", log.Ldate|log.Ltime|log.Lshortfile),
-			}
-
+			logger := newPrettyLogger(&buf)
 			logger.log(tt.message, tt.level, nil)
 			assert.Contains(t, buf.String(), tt.expectedMsg)
+			if tt.expectedMsg == "" {
+				assert.Empty(t, buf.String())
+			}
 			ResetGlobalLoggerSettings()
 		})
 	}
@@ -104,55 +141,69 @@ func Test_prettyLogger_log(t *testing.T) {
 
 func Test_prettyLogger_logWithError(t *testing.T) {
 	tests := []struct {
-		level       zapcore.Level
-		message     string
-		err         error
-		expectedMsg string
+		severityLevel zapcore.Level
+		level         zapcore.Level
+		message       string
+		err           error
+		expectedMsg   string
 	}{
 		{
 			zapcore.DebugLevel,
+			zapcore.DebugLevel,
 			"Debug Message",
 			errors.New("some error"),
-			"\u001B[90mDEBUG\u001B[0m \u001B[2mDebug Message \u001B[35msome error\u001B[0m",
+			"\u001B[90mDEBUG\u001B[0m \u001B[2mDebug Message",
 		},
 		{
+			zapcore.DebugLevel,
 			zapcore.InfoLevel,
 			"Info Message",
 			errors.New("some error"),
-			"\u001B[94mINFO\u001B[0m Info Message \u001B[35msome error\u001B[0m",
+			"\u001B[94mINFO\u001B[0m Info Message",
 		},
 		{
+			zapcore.DebugLevel,
 			zapcore.WarnLevel,
 			"Warn Message",
 			errors.New("some error"),
-			"\u001B[33mWARN\u001B[0m Warn Message \u001B[35msome error\u001B[0m",
+			"\u001B[33mWARN\u001B[0m Warn Message",
 		},
 		{
+			zapcore.DebugLevel,
 			zapcore.ErrorLevel,
 			"Error Message",
 			errors.New("some error"),
-			"\u001B[31mERROR\u001B[0m Error Message \u001B[35msome error\u001B[0m",
+			"\u001B[31mERROR\u001B[0m Error Message",
 		},
 		{
+			zapcore.DebugLevel,
 			zapcore.FatalLevel,
 			"Fatal Message",
 			errors.New("some error"),
-			"\u001B[31mFATAL\u001B[0m Fatal Message \u001B[35msome error\u001B[0m",
+			"\u001B[31mFATAL\u001B[0m Fatal Message",
+		},
+		{
+			zapcore.ErrorLevel,
+			zapcore.InfoLevel,
+			"Debug Message",
+			errors.New("some error"),
+			"",
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.level.String()+"_Level_With_Error", func(t *testing.T) {
+		t.Run(tt.severityLevel.String()+"_"+tt.level.String()+"_Level", func(t *testing.T) {
 			outputType = PrettyOutput
-			severityLevel = tt.level
+			omitKeys = []Key{TimeKey}
+			severityLevel = tt.severityLevel
 
 			var buf bytes.Buffer
-			logger := &prettyLogger{
-				Logger: log.New(&buf, "", log.Ldate|log.Ltime|log.Lshortfile),
-			}
-
+			logger := newPrettyLogger(&buf)
 			logger.logWithError(tt.message, tt.level, tt.err, nil)
 			assert.Contains(t, buf.String(), tt.expectedMsg)
+			if tt.expectedMsg == "" {
+				assert.Empty(t, buf.String())
+			}
 			ResetGlobalLoggerSettings()
 		})
 	}
@@ -205,9 +256,7 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 
 	// Prepare Logger
 	var buf bytes.Buffer
-	pretty = &prettyLogger{
-		Logger: log.New(&buf, "", log.Ldate|log.Ltime|log.Lshortfile),
-	}
+	pretty = newPrettyLogger(&buf)
 
 	// Execute
 	fileName = "./testdata/pretty-showErrorReport.jsonl"

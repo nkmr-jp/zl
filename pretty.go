@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -19,19 +20,16 @@ import (
 
 type prettyLogger struct {
 	Logger *log.Logger
+	out    io.Writer
 }
 
-func newPrettyLogger() *prettyLogger {
+func newPrettyLogger(out io.Writer) *prettyLogger {
 	if outputType != PrettyOutput {
 		return nil
 	}
-	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
+	l := log.New(out, "", log.Ldate|log.Ltime|log.Lshortfile)
 	if lo.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
-	}
-
-	if isStdOut {
-		l.SetOutput(os.Stdout)
 	}
 	return &prettyLogger{
 		Logger: l,
@@ -46,7 +44,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 		l.coloredLevel(level).String()+" "+l.coloredMsg(msg, level, fields),
 	)
 	if err != nil {
-		l.Logger.Fatal(err)
+		l.Logger.Println(au.Red(err))
 	}
 }
 
@@ -62,7 +60,7 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 		),
 	)
 	if err2 != nil {
-		l.Logger.Fatal(err2)
+		l.Logger.Println(au.Red(err2))
 	}
 }
 
@@ -127,21 +125,27 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 
 	fp, err := os.Open(fileNameValue)
 	if err != nil {
-		return
+		l.Logger.Println(au.Red(err))
 	}
 	defer func(fp *os.File) {
 		err := fp.Close()
 		if err != nil {
-			l.Logger.Fatal(err)
+			l.Logger.Println(au.Red(err))
 		}
 	}(fp)
 
-	count, traces := l.scanStackTraces(fp, pidValue)
-	l.printTraces(count, traces, pidValue)
+	count, traces, err := l.scanStackTraces(fp, pidValue)
+	if err != nil {
+		l.Logger.Println(au.Red(err))
+	}
+
+	if err := l.printTraces(count, traces, pidValue); err != nil {
+		l.Logger.Println(au.Red(err))
+	}
 }
 
 // nolint:funlen
-func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string) {
+func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string, error) {
 	scanner := bufio.NewScanner(fp)
 	var traces, key string
 	var groups []*ErrorGroup
@@ -154,7 +158,7 @@ func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string) 
 		var group *ErrorGroup
 		flg := false
 		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
-			continue
+			return 0, "", err
 		}
 		if errorLog.Stacktrace == "" || errorLog.Pid != pidValue {
 			continue
@@ -182,23 +186,24 @@ func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string) 
 	}
 
 	if err := scanner.Err(); err != nil {
-		l.Logger.Fatal(err)
+		return 0, "", err
 	}
-	return len(groups), traces
+	return len(groups), traces, nil
 }
 
-func (l *prettyLogger) printTraces(count int, traces string, pidValue int) {
+func (l *prettyLogger) printTraces(count int, traces string, pidValue int) error {
 	var head string
 	if count == 0 {
-		return
+		return nil
 	}
 	head += au.Red("ERROR REPORT\n").Bold().String()
 	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
 	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pidValue)
 	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
 	if _, err := fmt.Fprint(l.Logger.Writer(), output); err != nil {
-		return
+		return err
 	}
+	return nil
 }
 
 func (l *prettyLogger) fmtStackTrace(num, count int, el *ErrorLog) string {
@@ -248,6 +253,6 @@ func (l *prettyLogger) dump(a ...interface{}) {
 		au.Red("DUMP").Bold().String()+" "+spew.Sdump(a...),
 	)
 	if err != nil {
-		l.Logger.Fatal(err)
+		l.Logger.Println(au.Red(err))
 	}
 }
