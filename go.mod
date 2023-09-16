@@ -7,7 +7,7 @@ require (
 	github.com/logrusorgru/aurora/v4 v4.0.0
 	github.com/samber/lo v1.38.1
 	github.com/stretchr/testify v1.8.4
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.26.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
