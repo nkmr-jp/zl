@@ -62,7 +62,7 @@ func Test_newPrettyLogger(t *testing.T) {
 			omitKeys = tt.setOmitKeys
 
 			// Execute
-			logger := newPrettyLogger(tt.out)
+			logger := newPrettyLogger(tt.out, os.Stderr)
 
 			// Assert
 			if tt.expectedNil {
@@ -74,6 +74,13 @@ func Test_newPrettyLogger(t *testing.T) {
 			ResetGlobalLoggerSettings()
 		})
 	}
+}
+
+// faultyWriter always returns an error when Write is called.
+type faultyWriter struct{}
+
+func (fw *faultyWriter) Write(p []byte) (n int, err error) {
+	return 0, errors.New("forced writer error")
 }
 
 func Test_prettyLogger_log(t *testing.T) {
@@ -128,7 +135,7 @@ func Test_prettyLogger_log(t *testing.T) {
 			severityLevel = tt.severityLevel
 
 			var buf bytes.Buffer
-			logger := newPrettyLogger(&buf)
+			logger := newPrettyLogger(&buf, os.Stderr)
 			logger.log(tt.message, tt.level, nil)
 			assert.Contains(t, buf.String(), tt.expectedMsg)
 			if tt.expectedMsg == "" {
@@ -137,6 +144,16 @@ func Test_prettyLogger_log(t *testing.T) {
 			ResetGlobalLoggerSettings()
 		})
 	}
+
+	t.Run("capture internal error", func(t *testing.T) {
+		outputType = PrettyOutput
+		severityLevel = zapcore.DebugLevel
+
+		var buf bytes.Buffer
+		l := newPrettyLogger(&faultyWriter{}, &buf)
+		l.log("test message", zapcore.InfoLevel, nil)
+		assert.Contains(t, buf.String(), "[INTERNAL ERROR] ")
+	})
 }
 
 func Test_prettyLogger_logWithError(t *testing.T) {
@@ -198,7 +215,7 @@ func Test_prettyLogger_logWithError(t *testing.T) {
 			severityLevel = tt.severityLevel
 
 			var buf bytes.Buffer
-			logger := newPrettyLogger(&buf)
+			logger := newPrettyLogger(&buf, os.Stderr)
 			logger.logWithError(tt.message, tt.level, tt.err, nil)
 			assert.Contains(t, buf.String(), tt.expectedMsg)
 			if tt.expectedMsg == "" {
@@ -207,6 +224,16 @@ func Test_prettyLogger_logWithError(t *testing.T) {
 			ResetGlobalLoggerSettings()
 		})
 	}
+
+	t.Run("capture internal error", func(t *testing.T) {
+		outputType = PrettyOutput
+		severityLevel = zapcore.DebugLevel
+
+		var buf bytes.Buffer
+		l := newPrettyLogger(&faultyWriter{}, &buf)
+		l.logWithError("test message", zapcore.InfoLevel, errors.New("some error"), nil)
+		assert.Contains(t, buf.String(), "[INTERNAL ERROR] ")
+	})
 }
 
 func Test_prettyLogger_coloredLevel(t *testing.T) {
@@ -256,7 +283,7 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 
 	// Prepare Logger
 	var buf bytes.Buffer
-	pretty = newPrettyLogger(&buf)
+	pretty = newPrettyLogger(&buf, os.Stderr)
 
 	// Execute
 	fileName = "./testdata/pretty-showErrorReport.jsonl"

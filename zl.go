@@ -56,7 +56,7 @@ func Init() {
 		encoderConfig = newEncoderConfig()
 		zapLogger = newLogger(encoderConfig)
 		if outputType == PrettyOutput || isTest {
-			pretty = newPrettyLogger(getConsoleOutput())
+			pretty = newPrettyLogger(getConsoleOutput(), os.Stderr)
 			zapLogger = zapLogger.WithOptions(zap.WithFatalHook(fatalHook{}))
 		}
 

@@ -18,12 +18,16 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// prettyLogger is a wrapper of log.Logger.
+// It is used to output colored simple logs.
+// It can also parse the zapLogger's stacktrace field and view the error reports.
+// It is useful for identifying problem areas during development.
 type prettyLogger struct {
-	Logger *log.Logger
-	out    io.Writer
+	Logger      *log.Logger // Logger is used to output colored logs.
+	internalLog *log.Logger // internalLog is used to output internal errors.
 }
 
-func newPrettyLogger(out io.Writer) *prettyLogger {
+func newPrettyLogger(out, err io.Writer) *prettyLogger {
 	if outputType != PrettyOutput {
 		return nil
 	}
@@ -32,7 +36,8 @@ func newPrettyLogger(out io.Writer) *prettyLogger {
 		l.SetFlags(log.Lshortfile)
 	}
 	return &prettyLogger{
-		Logger: l,
+		Logger:      l,
+		internalLog: log.New(err, "[INTERNAL ERROR] ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
 
@@ -44,7 +49,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 		l.coloredLevel(level).String()+" "+l.coloredMsg(msg, level, fields),
 	)
 	if err != nil {
-		l.Logger.Println(au.Red(err))
+		l.internalLog.Println(err)
 	}
 }
 
@@ -60,7 +65,7 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 		),
 	)
 	if err2 != nil {
-		l.Logger.Println(au.Red(err2))
+		l.internalLog.Println(err2)
 	}
 }
 
@@ -125,22 +130,22 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 
 	fp, err := os.Open(fileNameValue)
 	if err != nil {
-		l.Logger.Println(au.Red(err))
+		l.internalLog.Println(err)
 	}
 	defer func(fp *os.File) {
 		err := fp.Close()
 		if err != nil {
-			l.Logger.Println(au.Red(err))
+			l.internalLog.Println(err)
 		}
 	}(fp)
 
 	count, traces, err := l.scanStackTraces(fp, pidValue)
 	if err != nil {
-		l.Logger.Println(au.Red(err))
+		l.internalLog.Println(err)
 	}
 
 	if err := l.printTraces(count, traces, pidValue); err != nil {
-		l.Logger.Println(au.Red(err))
+		l.internalLog.Println(err)
 	}
 }
 
@@ -253,6 +258,6 @@ func (l *prettyLogger) dump(a ...interface{}) {
 		au.Red("DUMP").Bold().String()+" "+spew.Sdump(a...),
 	)
 	if err != nil {
-		l.Logger.Println(au.Red(err))
+		l.internalLog.Println(err)
 	}
 }
