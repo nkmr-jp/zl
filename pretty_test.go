@@ -241,7 +241,7 @@ func Test_prettyLogger_coloredLevel(t *testing.T) {
 	// Initialize the prettyLogger instance
 	logger := &prettyLogger{}
 
-	// Create test cases
+	// Create tt cases
 	tests := []struct {
 		level    zapcore.Level
 		expected string
@@ -255,51 +255,101 @@ func Test_prettyLogger_coloredLevel(t *testing.T) {
 	}
 
 	// Run test cases
-	for _, test := range tests {
-		t.Run(test.level.String(), func(t *testing.T) {
-			coloredString := logger.coloredLevel(test.level).String()
-			assert.Equal(t, test.expected, coloredString)
+	for _, tt := range tests {
+		t.Run(tt.level.String(), func(t *testing.T) {
+			coloredString := logger.coloredLevel(tt.level).String()
+			assert.Equal(t, tt.expected, coloredString)
 			ResetGlobalLoggerSettings()
 		})
 	}
 }
 
 func Test_prettyLogger_showErrorReport(t *testing.T) {
-	// Prepare expected string
-	expected := "" +
-		"\n" +
-		"\n\u001B[1;31mERROR REPORT" +
-		"\n\u001B[0m  \u001B[36mErrorCount\u001B[0m: 1" +
-		"\n  \u001B[36mPID\u001B[0m: 16169" +
-		"\n\n" +
-		"\n\u001B[1m1\u001B[0m. pretty_test.go:218: \u001B[31mERROR\u001B[0m SOME_ERROR \u001B[35msome error\u001B[0m" +
-		"\n  \u001B[36mTimestamp\u001B[0m:\t2023-09-09T15:53:17.287179+09:00" +
-		"\n  \u001B[36mLogFile\u001B[0m:\t/PATH/TO/PROJECT/ROOT/testdata/pretty-showErrorReport.jsonl:1" +
-		"\n  \u001B[36mStackTrace\u001B[0m: " +
-		"\n\tgithub.com/nkmr-jp/zl.Test_prettyLogger_showErrorReport" +
-		"\n\t\t/PATH/TO/PROJECT/ROOT/pretty_test.go:218" +
-		"\n\ttesting.tRunner" +
-		"\n\t\t/PATH/TO/GO/ROOT/src/testing/testing.go:1595" +
-		"\n\n\n"
+	t.Run("no error", func(t *testing.T) {
+		// Prepare expected string
+		expected := "" +
+			"\n" +
+			"\n\u001B[1;31mERROR REPORT" +
+			"\n\u001B[0m  \u001B[36mErrorCount\u001B[0m: 1" +
+			"\n  \u001B[36mPID\u001B[0m: 123" +
+			"\n\n" +
+			"\n\u001B[1m1\u001B[0m. pretty_test.go:218: \u001B[31mERROR\u001B[0m SOME_ERROR \u001B[35msome error\u001B[0m" +
+			"\n  \u001B[36mTimestamp\u001B[0m:\t2023-09-09T15:53:17.287179+09:00" +
+			"\n  \u001B[36mLogFile\u001B[0m:\t/PATH/TO/PROJECT/ROOT/testdata/basic.jsonl:1" +
+			"\n  \u001B[36mStackTrace\u001B[0m: " +
+			"\n\tgithub.com/nkmr-jp/zl.Test_prettyLogger_showErrorReport" +
+			"\n\t\t/PATH/TO/PROJECT/ROOT/pretty_test.go:218" +
+			"\n\ttesting.tRunner" +
+			"\n\t\t/PATH/TO/GO/ROOT/src/testing/testing.go:1595" +
+			"\n\n\n"
 
-	// Prepare Logger
-	var buf bytes.Buffer
-	pretty = newPrettyLogger(&buf, os.Stderr)
+		// Prepare Logger
+		var buf bytes.Buffer
+		l := newPrettyLogger(&buf, os.Stderr)
 
-	// Execute
-	fileName = "./testdata/pretty-showErrorReport.jsonl"
-	pretty.showErrorReport(fileName, 16169)
-	str := buf.String()
+		// Execute
+		fileName = "./testdata/basic.jsonl"
+		l.showErrorReport(fileName, 123)
+		str := buf.String()
 
-	// Replace
-	goModPath, err := exec.Command("go", "env", "GOMOD").CombinedOutput()
-	assert.NoError(t, err)
-	pjRoot := strings.ReplaceAll(string(goModPath), "/go.mod\n", "")
-	replacedStr := strings.ReplaceAll(str, pjRoot, "/PATH/TO/PROJECT/ROOT")
+		// Replace
+		goModPath, err := exec.Command("go", "env", "GOMOD").CombinedOutput()
+		assert.NoError(t, err)
+		pjRoot := strings.ReplaceAll(string(goModPath), "/go.mod\n", "")
+		replacedStr := strings.ReplaceAll(str, pjRoot, "/PATH/TO/PROJECT/ROOT")
 
-	// Assert
-	assert.Equal(t, expected, replacedStr)
-	ResetGlobalLoggerSettings()
+		// Assert
+		assert.Equal(t, expected, replacedStr)
+		ResetGlobalLoggerSettings()
+	})
+
+	t.Run("error", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			fileName string
+			pid      int
+			output   io.Writer
+			expected string
+		}{
+			{
+				name:     "file not found",
+				fileName: "./testdata/not-found.jsonl",
+				pid:      123,
+				output:   os.Stderr,
+				expected: "no such file or directory",
+			},
+			{
+				name:     "faulty log file",
+				fileName: "./testdata/faulty.jsonl",
+				pid:      123,
+				output:   os.Stderr,
+				expected: "unexpected end of JSON input",
+			},
+			{
+				name:     "faulty writer",
+				fileName: "./testdata/basic.jsonl",
+				pid:      123,
+				output:   &faultyWriter{},
+				expected: "forced writer error",
+			},
+		}
+
+		// Run test cases
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				// Prepare
+				var errBuf bytes.Buffer
+				l := newPrettyLogger(tt.output, &errBuf)
+
+				// Execute
+				l.showErrorReport(tt.fileName, tt.pid)
+
+				// Assert
+				assert.Contains(t, errBuf.String(), tt.expected)
+				ResetGlobalLoggerSettings()
+			})
+		}
+	})
 }
 
 func Test_prettyLogger_consoleMsg(t *testing.T) {

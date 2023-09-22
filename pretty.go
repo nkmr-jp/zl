@@ -131,6 +131,7 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 	fp, err := os.Open(fileNameValue)
 	if err != nil {
 		l.internalLog.Println(err)
+		return
 	}
 	defer func(fp *os.File) {
 		err := fp.Close()
@@ -142,6 +143,7 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 	count, traces, err := l.scanStackTraces(fp, pidValue)
 	if err != nil {
 		l.internalLog.Println(err)
+		return
 	}
 
 	if err := l.printTraces(count, traces, pidValue); err != nil {
@@ -259,5 +261,6 @@ func (l *prettyLogger) dump(a ...interface{}) {
 	)
 	if err != nil {
 		l.internalLog.Println(err)
+		return
 	}
 }
