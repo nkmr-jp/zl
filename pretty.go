@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,24 +18,26 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// prettyLogger is a wrapper of log.Logger.
+// It is used to output colored simple logs.
+// It can also parse the zapLogger's stacktrace field and view the error reports.
+// It is useful for identifying problem areas during development.
 type prettyLogger struct {
-	Logger *log.Logger
+	Logger      *log.Logger // Logger is used to output colored logs.
+	internalLog *log.Logger // internalLog is used to output internal errors.
 }
 
-func newPrettyLogger() *prettyLogger {
+func newPrettyLogger(out, err io.Writer) *prettyLogger {
 	if outputType != PrettyOutput {
 		return nil
 	}
-	l := log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
+	l := log.New(out, "", log.Ldate|log.Ltime|log.Lshortfile)
 	if lo.Contains(omitKeys, TimeKey) {
 		l.SetFlags(log.Lshortfile)
 	}
-
-	if isStdOut {
-		l.SetOutput(os.Stdout)
-	}
 	return &prettyLogger{
-		Logger: l,
+		Logger:      l,
+		internalLog: log.New(err, "[INTERNAL ERROR] ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
 
@@ -46,7 +49,7 @@ func (l *prettyLogger) log(msg string, level zapcore.Level, fields []zap.Field) 
 		l.coloredLevel(level).String()+" "+l.coloredMsg(msg, level, fields),
 	)
 	if err != nil {
-		l.Logger.Fatal(err)
+		l.internalLog.Println(err)
 	}
 }
 
@@ -62,7 +65,7 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 		),
 	)
 	if err2 != nil {
-		l.Logger.Fatal(err2)
+		l.internalLog.Println(err2)
 	}
 }
 
@@ -119,28 +122,37 @@ func (l *prettyLogger) coloredLevel(level zapcore.Level) au.Value {
 	return au.BrightBlack("")
 }
 
-func (l *prettyLogger) showErrorReport() {
+// showErrorReport writes the colored error report to console.
+func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 	if lo.Contains(omitKeys, StacktraceKey) && lo.Contains(omitKeys, PIDKey) {
 		return
 	}
 
-	fp, err := os.Open(fileName)
+	fp, err := os.Open(fileNameValue)
 	if err != nil {
+		l.internalLog.Println(err)
 		return
 	}
 	defer func(fp *os.File) {
 		err := fp.Close()
 		if err != nil {
-			l.Logger.Fatal(err)
+			l.internalLog.Println(err)
 		}
 	}(fp)
 
-	count, traces := l.scanStackTraces(fp)
-	l.printTraces(count, traces)
+	count, traces, err := l.scanStackTraces(fp, pidValue)
+	if err != nil {
+		l.internalLog.Println(err)
+		return
+	}
+
+	if err := l.printTraces(count, traces, pidValue); err != nil {
+		l.internalLog.Println(err)
+	}
 }
 
 // nolint:funlen
-func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
+func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string, error) {
 	scanner := bufio.NewScanner(fp)
 	var traces, key string
 	var groups []*ErrorGroup
@@ -153,9 +165,9 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 		var group *ErrorGroup
 		flg := false
 		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
-			continue
+			return 0, "", err
 		}
-		if errorLog.Stacktrace == "" || errorLog.Pid != pid {
+		if errorLog.Stacktrace == "" || errorLog.Pid != pidValue {
 			continue
 		}
 		key = fmt.Sprintf("severity:%s,message:%s,caller:%s,error:%s",
@@ -181,29 +193,24 @@ func (l *prettyLogger) scanStackTraces(fp *os.File) (int, string) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		l.Logger.Fatal(err)
+		return 0, "", err
 	}
-	return len(groups), traces
+	return len(groups), traces, nil
 }
 
-func (l *prettyLogger) printTraces(count int, traces string) {
+func (l *prettyLogger) printTraces(count int, traces string, pidValue int) error {
 	var head string
 	if count == 0 {
-		return
+		return nil
 	}
 	head += au.Red("ERROR REPORT\n").Bold().String()
 	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
-	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pid)
+	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pidValue)
 	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
-	if isStdOut {
-		if _, err := fmt.Fprint(os.Stdout, output); err != nil {
-			return
-		}
-	} else {
-		if _, err := fmt.Fprint(os.Stderr, output); err != nil {
-			return
-		}
+	if _, err := fmt.Fprint(l.Logger.Writer(), output); err != nil {
+		return err
 	}
+	return nil
 }
 
 func (l *prettyLogger) fmtStackTrace(num, count int, el *ErrorLog) string {
@@ -253,6 +260,6 @@ func (l *prettyLogger) dump(a ...interface{}) {
 		au.Red("DUMP").Bold().String()+" "+spew.Sdump(a...),
 	)
 	if err != nil {
-		l.Logger.Fatal(err)
+		l.internalLog.Println(err)
 	}
 }

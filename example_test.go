@@ -7,6 +7,8 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"os"
+	"syscall"
+	"time"
 )
 
 var (
@@ -138,8 +140,8 @@ func ExampleSetVersion() {
 
 	// Output:
 	// {"severity":"DEBUG","caller":"zl/zl.go:82","message":"INIT_LOGGER","version":"v1.0.0","console":"Severity: DEBUG, Output: ConsoleAndFile, File: ./log/example-set-version_v1.0.0.jsonl"}
-	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L133","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
-	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L134","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"INFO","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L135","message":"INFO_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
+	// {"severity":"WARN","caller":"https://github.com/nkmr-jp/zl/blob/v1.0.0/example_test.go#L136","message":"WARN_MESSAGE","version":"v1.0.0","detail":"detail info xxxxxxxxxxxxxxxxx"}
 
 }
 
@@ -304,13 +306,34 @@ func ExampleDump() {
 }
 
 func ExampleSyncWhenStop() {
+	// syscall.SIGINT
 	setupForExampleTest()
-
 	zl.SetLevel(zl.DebugLevel)
 	zl.SetRotateFileName("./log/example-SyncWhenStop.jsonl")
 	zl.Init()
-	defer zl.Sync()
 	zl.SyncWhenStop()
-	zl.Info("TEST")
+
+	go func() {
+		time.Sleep(time.Millisecond * 50)
+		syscall.Kill(os.Getpid(), syscall.SIGINT)
+	}()
+	time.Sleep(time.Millisecond * 100)
+
+	// syscall.SIGTERM
+	fmt.Println()
+	setupForExampleTest()
+	zl.SetLevel(zl.DebugLevel)
+	zl.SetRotateFileName("./log/example-SyncWhenStop.jsonl")
+	zl.Init()
+	zl.SyncWhenStop()
+
+	go func() {
+		time.Sleep(time.Millisecond * 50)
+		syscall.Kill(os.Getpid(), syscall.SIGTERM)
+	}()
+	time.Sleep(time.Millisecond * 100)
+
 	// Output:
+	// os.Exit(130) called.
+	// os.Exit(143) called.
 }

@@ -42,7 +42,7 @@ var (
 type fatalHook struct{}
 
 func (f fatalHook) OnWrite(_ *zapcore.CheckedEntry, _ []zapcore.Field) {
-	pretty.showErrorReport()
+	pretty.showErrorReport(fileName, pid)
 	if isTest {
 		fmt.Println("os.Exit(1) called.")
 	} else {
@@ -56,7 +56,7 @@ func Init() {
 		encoderConfig = newEncoderConfig()
 		zapLogger = newLogger(encoderConfig)
 		if outputType == PrettyOutput || isTest {
-			pretty = newPrettyLogger()
+			pretty = newPrettyLogger(getConsoleOutput(), os.Stderr)
 			zapLogger = zapLogger.WithOptions(zap.WithFatalHook(fatalHook{}))
 		}
 
@@ -182,7 +182,7 @@ func Sync() {
 		log.Println(err)
 	}
 	if outputType == PrettyOutput {
-		pretty.showErrorReport()
+		pretty.showErrorReport(fileName, pid)
 	}
 }
 
@@ -208,7 +208,12 @@ func SyncWhenStop() {
 
 		iDebug(fmt.Sprintf("GOT_SIGNAL_%v", strings.ToUpper(s.String())))
 		Sync() // flush log buffer
-		os.Exit(128 + sigCode)
+
+		if isTest {
+			fmt.Printf("os.Exit(%d) called.", 128+sigCode)
+		} else {
+			os.Exit(128 + sigCode)
+		}
 	}()
 }
 

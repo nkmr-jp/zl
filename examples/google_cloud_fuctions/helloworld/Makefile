@@ -12,14 +12,14 @@ cp:
 	rm ./pkg_test/zl/*_test.go
 
 start: cp
-	export FUNCTION_TARGET=HelloGet; go run cmd/main.go
+	FUNCTION_TARGET=HelloWorld ENV=local go run cmd/main.go
 
 deploy: cp
 	gcloud beta functions deploy $(FUNC_NAME) \
     --gen2 \
-    --runtime go116 \
+    --runtime go121 \
     --trigger-http \
-    --entry-point HelloGet \
+    --entry-point HelloWorld \
     --source . \
     --allow-unauthenticated
 
@@ -30,4 +30,4 @@ log:
 	gcloud beta functions logs read $(FUNC_NAME) --gen2 --limit=100
 
 open:
-	open https://console.cloud.google.com/functions/details/$(REGION)/$(FUNC_NAME)?env=gen2
+	open https://console.cloud.google.com/functions/details/$(REGION)/$(FUNC_NAME)?env=gen2&project=$(PROJECT_ID)

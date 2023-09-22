@@ -3,6 +3,7 @@ package zl
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -48,7 +49,7 @@ func (l *Logger) Named(loggerName string) *Logger {
 	clone := l.clone()
 	clone.zapLogger = clone.zapLogger.Named(loggerName)
 	if outputType == PrettyOutput {
-		clone.pretty = newPrettyLogger()
+		clone.pretty = newPrettyLogger(getConsoleOutput(), os.Stderr)
 		clone.pretty.Logger.SetPrefix(fmt.Sprintf("%s | ", clone.zapLogger.Name()))
 	}
 	return clone
