@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
 	"log"
@@ -299,4 +300,17 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 	// Assert
 	assert.Equal(t, expected, replacedStr)
 	ResetGlobalLoggerSettings()
+}
+
+func Test_prettyLogger_consoleMsg(t *testing.T) {
+	var buf bytes.Buffer
+	pretty = newPrettyLogger(&buf, os.Stderr)
+	consoleFields = []string{"name", "id"}
+
+	expected := separator + "\u001B[36mAlice\u001B[0m" + separator + "\u001B[34m1\u001B[0m"
+	actual := pretty.consoleMsg([]zap.Field{
+		zap.String("name", "Alice"),
+		zap.Int("id", 1),
+	})
+	assert.Equal(t, expected, actual)
 }
