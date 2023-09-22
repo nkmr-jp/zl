@@ -261,6 +261,5 @@ func (l *prettyLogger) dump(a ...interface{}) {
 	)
 	if err != nil {
 		l.internalLog.Println(err)
-		return
 	}
 }

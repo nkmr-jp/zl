@@ -354,13 +354,38 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 
 func Test_prettyLogger_consoleMsg(t *testing.T) {
 	var buf bytes.Buffer
-	pretty = newPrettyLogger(&buf, os.Stderr)
+	l := newPrettyLogger(&buf, os.Stderr)
 	consoleFields = []string{"name", "id"}
 
 	expected := separator + "\u001B[36mAlice\u001B[0m" + separator + "\u001B[34m1\u001B[0m"
-	actual := pretty.consoleMsg([]zap.Field{
+	actual := l.consoleMsg([]zap.Field{
 		zap.String("name", "Alice"),
 		zap.Int("id", 1),
 	})
 	assert.Equal(t, expected, actual)
+}
+
+func Test_prettyLogger_dump(t *testing.T) {
+	t.Run("dump", func(t *testing.T) {
+		var buf bytes.Buffer
+		l := newPrettyLogger(&buf, os.Stderr)
+		l.dump("test dump")
+		assert.Contains(t, buf.String(), "\u001B[1;31mDUMP\u001B[0m (string) (len=9) \"test dump\"\n")
+	})
+
+	t.Run("not prettyOutput", func(t *testing.T) {
+		var buf bytes.Buffer
+		outputType = ConsoleOutput
+		l := newPrettyLogger(&buf, os.Stderr)
+		l.dump("test dump")
+		assert.Empty(t, buf.String())
+		ResetGlobalLoggerSettings()
+	})
+
+	t.Run("faulty output", func(t *testing.T) {
+		var errBuf bytes.Buffer
+		l := newPrettyLogger(&faultyWriter{}, &errBuf)
+		l.dump("test dump")
+		assert.Contains(t, errBuf.String(), "[INTERNAL ERROR] ")
+	})
 }
