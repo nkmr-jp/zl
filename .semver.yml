@@ -10,6 +10,7 @@ semver:
   #    - lipstick
   patch:
     - memo
+    - white_check_mark
   #  none: # gitmoji.json "semver": null is convert to none
   #    - pencil2
   ignore: # not add in release-template.hbs
