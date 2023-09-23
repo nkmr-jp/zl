@@ -1,4 +1,7 @@
-// Package zl provides zap based advanced logging features, and it's easy to use.
+// Package zl is a logger based on zap.
+// It provides advanced logging features.
+// It is designed with the developer's experience in mind and allows
+// the user to choose the best output format for their purposes.
 package zl
 
 import (
