@@ -186,6 +186,14 @@ func SetOmitKeys(key ...Key) {
 	omitKeys = key
 }
 
+// SetFieldKey is changes the key of the default field.
+func SetFieldKey(key Key, val string) {
+	if key == "" || val == "" {
+		return
+	}
+	fieldKeys[key] = val
+}
+
 // SetStdout is changes the console log output from stderr to stdout.
 func SetStdout() {
 	isStdOut = true

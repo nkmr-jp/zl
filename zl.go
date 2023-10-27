@@ -36,6 +36,7 @@ var (
 	callerEncoder  zapcore.CallerEncoder
 	consoleFields  = []string{consoleFieldDefault}
 	omitKeys       []Key
+	fieldKeys      = make(map[Key]string)
 	isStdOut       bool
 	separator      = " "
 	pid            int
@@ -88,13 +89,13 @@ func Init() {
 
 func newEncoderConfig() *zapcore.EncoderConfig {
 	enc := zapcore.EncoderConfig{
-		MessageKey:     string(MessageKey),
-		LevelKey:       string(LevelKey),
-		TimeKey:        string(TimeKey),
-		NameKey:        string(LoggerKey),
-		CallerKey:      string(CallerKey),
-		FunctionKey:    string(FunctionKey),
-		StacktraceKey:  string(StacktraceKey),
+		MessageKey:     fieldKey(MessageKey),
+		LevelKey:       fieldKey(LevelKey),
+		TimeKey:        fieldKey(TimeKey),
+		NameKey:        fieldKey(LoggerKey),
+		CallerKey:      fieldKey(CallerKey),
+		FunctionKey:    fieldKey(FunctionKey),
+		StacktraceKey:  fieldKey(StacktraceKey),
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
@@ -102,6 +103,14 @@ func newEncoderConfig() *zapcore.EncoderConfig {
 	}
 	setOmitKeys(&enc)
 	return &enc
+}
+
+func fieldKey(key Key) string {
+	value, ok := fieldKeys[key]
+	if !ok {
+		return string(key)
+	}
+	return value
 }
 
 // See https://pkg.go.dev/go.uber.org/zap
@@ -270,6 +279,7 @@ func ResetGlobalLoggerSettings() {
 	callerEncoder = nil
 	consoleFields = []string{consoleFieldDefault}
 	omitKeys = nil
+	fieldKeys = make(map[Key]string)
 	isStdOut = false
 	separator = " "
 	fileName = ""
