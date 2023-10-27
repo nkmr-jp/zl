@@ -67,8 +67,21 @@ func TestSetLevelByString(t *testing.T) {
 	}
 }
 
-func TestSetSeparator(t *testing.T) {
+func TestSetFieldKey(t *testing.T) {
+	SetFieldKey(FunctionKey, "func")
+	SetFieldKey(StacktraceKey, "stack_trace")
+	assert.Equal(t,
+		map[Key]string{
+			FunctionKey:   "func",
+			StacktraceKey: "stack_trace",
+		},
+		fieldKeys,
+	)
 	ResetGlobalLoggerSettings()
+}
+
+func TestSetSeparator(t *testing.T) {
 	SetSeparator(":")
 	assert.Equal(t, ":", separator)
+	ResetGlobalLoggerSettings()
 }
