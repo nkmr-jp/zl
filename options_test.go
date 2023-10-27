@@ -70,6 +70,8 @@ func TestSetLevelByString(t *testing.T) {
 func TestSetFieldKey(t *testing.T) {
 	SetFieldKey(FunctionKey, "func")
 	SetFieldKey(StacktraceKey, "stack_trace")
+	SetFieldKey(CallerKey, "")
+	SetFieldKey("", "abc")
 	assert.Equal(t,
 		map[Key]string{
 			FunctionKey:   "func",

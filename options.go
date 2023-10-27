@@ -188,6 +188,9 @@ func SetOmitKeys(key ...Key) {
 
 // SetFieldKey is changes the key of the default field.
 func SetFieldKey(key Key, val string) {
+	if key == "" || val == "" {
+		return
+	}
 	fieldKeys[key] = val
 }
 
