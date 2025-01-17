@@ -60,7 +60,7 @@ func (l *prettyLogger) logWithError(msg string, level zapcore.Level, err error, 
 	err2 := l.Logger.Output(
 		4,
 		l.coloredLevel(level).String()+" "+l.coloredMsg(
-			fmt.Sprintf("%s%s%s", msg, separator, au.Magenta(err.Error())),
+			fmt.Sprintf("%s%s%s", msg, separator, au.Magenta(fmt.Sprintf("%v", err))),
 			level, fields,
 		),
 	)

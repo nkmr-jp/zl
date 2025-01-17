@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ["1.21.x", "1.22.x"]
+        go: ["1.22.x", "1.23.x"]
         include:
-          - go: 1.22.x
+          - go: 1.23.x
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,4 +27,4 @@ jobs:
       - name: Test
         run: make cover
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5

@@ -235,6 +235,16 @@ func Test_prettyLogger_logWithError(t *testing.T) {
 		l.logWithError("test message", zapcore.InfoLevel, errors.New("some error"), nil)
 		assert.Contains(t, buf.String(), "[INTERNAL ERROR] ")
 	})
+
+	t.Run("when error is nil", func(t *testing.T) {
+		outputType = PrettyOutput
+		severityLevel = zapcore.DebugLevel
+
+		var buf bytes.Buffer
+		l := newPrettyLogger(&buf, os.Stderr)
+		l.logWithError("test message", zapcore.InfoLevel, nil, nil)
+		assert.Contains(t, buf.String(), "<nil>")
+	})
 }
 
 func Test_prettyLogger_coloredLevel(t *testing.T) {
