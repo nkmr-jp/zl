@@ -1,17 +1,12 @@
+version: "2"
+
 run:
   tests: false
 
 # `golangci-lint linters` or See: https://golangci-lint.run/usage/linters/
 linters:
   enable:
-    # Auto Fixable linters (`golangci-lint linters | grep "auto-fix: true"`)
-    - gofmt
-    - goimports
     - misspell
-    - whitespace
-    - gci
-    #    - godot
-    - gofumpt
 
     # Other Useful Linters
     - lll
@@ -21,17 +16,26 @@ linters:
     - gosec    # https://github.com/securego/gosec#available-rules
     - gocritic # https://go-critic.github.io/overview.html
 
-issues:
-  exclude-rules:
-    - linters:
-        - lll
-      source: "^func|^//|^	\"|^ * |^	//"
+  settings:
+    lll:
+      line-length: 100 # default 120
+    dupl:
+      threshold: 60   # default 100
+    funlen:
+      lines: 40       # default 60
+      statements: 20  # default 40
 
-linters-settings:
-  lll:
-    line-length: 100 # default 120
-  dupl:
-    threshold: 60   # default 100
-  funlen:
-    lines: 40       # default 60
-    statements: 20  # default 40
+  # v2: issues.exclude-rules -> linters.exclusions.rules
+  exclusions:
+    rules:
+      - linters:
+          - lll
+        source: "^func|^//|^\t\"|^ * |^\t//"
+
+# Formatter linters moved to formatters section in v2
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
+    - gofumpt

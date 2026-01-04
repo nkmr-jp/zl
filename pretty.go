@@ -128,7 +128,7 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 		return
 	}
 
-	fp, err := os.Open(fileNameValue)
+	fp, err := os.Open(fileNameValue) //nolint:gosec // fileNameValue is controlled internally
 	if err != nil {
 		l.internalLog.Println(err)
 		return

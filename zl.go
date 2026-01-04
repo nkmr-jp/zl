@@ -290,7 +290,8 @@ func ResetGlobalLoggerSettings() {
 	compress = false
 }
 
-// Cleanup
+// Cleanup resets global logger settings.
+//
 // Deprecated: Use ResetGlobalLoggerSettings instead.
 // # codecov ignore
 func Cleanup() {
