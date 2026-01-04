@@ -19,7 +19,8 @@ func main() {
 	defer zl.Sync() // flush log buffer
 
 	// Write logs
-	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20)) // can use zap fields.
+	// can use zap fields.
+	zl.Info("USER_INFO", zap.String("user_name", "Alice"), zap.Int("user_age", 20))
 	zl.Info("DISPLAY_TO_CONSOLE", zl.Console("The message you want to display to console"))
 	zl.Warn("WARN_MESSAGE")
 	zl.Debug("DEBUG_MESSAGE")
