@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ["1.24.x", "1.25.x"]
+        go: ["1.25.x", "1.26.x"]
         include:
-          - go: 1.25.x
+          - go: 1.26.x
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
