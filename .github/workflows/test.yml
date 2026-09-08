@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ["1.25.x", "1.26.x"]
-        include:
-          - go: 1.26.x
+        # go.mod requires go 1.26; setup-go v7 sets GOTOOLCHAIN=local, so an older
+        # matrix entry can no longer auto-download the toolchain and just fails.
+        go: ["1.26.x"]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
