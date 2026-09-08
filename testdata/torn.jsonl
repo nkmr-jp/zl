@@ -1,0 +1,4 @@
+{"severity":"INFO","timestamp":"2026-09-08T03:10:54.466055+09:00","caller":"app/run.go:921","message":"GATE_PASSED","version"{"severity":"INFO","timestamp":"2026-09-08T03:10:54.567613+09:00","caller":"app/entry.go:187","message":"SET_BALANCE","pid":456}
+{"severity":"ERROR","timestamp":"2026-09-08T03:10:55.000000+09:00","caller":"zl/pretty_test.go:300","function":"github.com/nkmr-jp/zl.Test_prettyLogger_showErrorReport","message":"TORN_ERROR","version":"f51b1bf","hostname":"test-hostname","pid":123,"error":"torn error","stacktrace":"github.com/nkmr-jp/zl.Test_prettyLogger_showErrorReport\n\t/PATH/TO/PROJECT/ROOT/pretty_test.go:300"}
+null
+{"severity":"INFO","timestamp":"2026-09-08T03:10:56.000000+09:00","caller":"app/run.go:1","message":"OTHER_PID","pid":456}

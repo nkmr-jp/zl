@@ -313,6 +313,58 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 		ResetGlobalLoggerSettings()
 	})
 
+	t.Run("skip lines that are not JSON", func(t *testing.T) {
+		tests := []struct {
+			name       string
+			fileName   string
+			pid        int
+			wantReport bool
+			wantOut    []string
+		}{
+			{
+				// A single truncated line: nothing to report, and no internal error either.
+				name:       "faulty log file",
+				fileName:   "./testdata/faulty.jsonl",
+				pid:        123,
+				wantReport: false,
+			},
+			{
+				// A line torn by another process's interleaved write must not hide
+				// this process's own error, and the report counts the skipped lines (torn + null).
+				name:       "torn line mixed with a valid error",
+				fileName:   "./testdata/torn.jsonl",
+				pid:        123,
+				wantReport: true,
+				wantOut:    []string{"ERROR REPORT", "ErrorCount\u001B[0m: 1", "SkippedLines\u001B[0m: 2", "TORN_ERROR"},
+			},
+			{
+				// Torn lines belong to another PID: nothing to report for this one.
+				name:       "torn line, other pid only",
+				fileName:   "./testdata/torn.jsonl",
+				pid:        456,
+				wantReport: false,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				var buf, errBuf bytes.Buffer
+				l := newPrettyLogger(&buf, &errBuf)
+
+				l.showErrorReport(tt.fileName, tt.pid)
+
+				assert.Empty(t, errBuf.String(), "no [INTERNAL ERROR] for a malformed line")
+				if !tt.wantReport {
+					assert.Empty(t, buf.String())
+				}
+				for _, want := range tt.wantOut {
+					assert.Contains(t, buf.String(), want)
+				}
+				ResetGlobalLoggerSettings()
+			})
+		}
+	})
+
 	t.Run("error", func(t *testing.T) {
 		tests := []struct {
 			name     string
@@ -327,13 +379,6 @@ func Test_prettyLogger_showErrorReport(t *testing.T) {
 				pid:      123,
 				output:   os.Stderr,
 				expected: "no such file or directory",
-			},
-			{
-				name:     "faulty log file",
-				fileName: "./testdata/faulty.jsonl",
-				pid:      123,
-				output:   os.Stderr,
-				expected: "unexpected end of JSON input",
 			},
 			{
 				name:     "faulty writer",

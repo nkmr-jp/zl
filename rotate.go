@@ -86,3 +86,13 @@ func SetRotateLocalTime(val bool) {
 func SetRotateCompress(val bool) {
 	compress = val
 }
+
+// resetRotateSettings resets the log rotation settings to their zero values.
+func resetRotateSettings() {
+	fileName = ""
+	maxSize = 0
+	maxBackups = 0
+	maxAge = 0
+	localTime = false
+	compress = false
+}

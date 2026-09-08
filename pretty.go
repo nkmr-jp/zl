@@ -140,32 +140,49 @@ func (l *prettyLogger) showErrorReport(fileNameValue string, pidValue int) {
 		}
 	}(fp)
 
-	count, traces, err := l.scanStackTraces(fp, pidValue)
+	report, err := l.scanStackTraces(fp, pidValue)
 	if err != nil {
 		l.internalLog.Println(err)
 		return
 	}
 
-	if err := l.printTraces(count, traces, pidValue); err != nil {
+	if err := l.printTraces(report, pidValue); err != nil {
 		l.internalLog.Println(err)
 	}
 }
 
-// nolint:funlen
-func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string, error) {
-	scanner := bufio.NewScanner(fp)
-	var traces, key string
-	var groups []*ErrorGroup
+// errorReport is the result of scanning the log file for this process's errors.
+type errorReport struct {
+	count   int    // number of distinct error groups
+	skipped int    // lines that could not be parsed as JSON and were ignored
+	traces  string // formatted stack traces
+}
 
-	count := 0
+// maxLogLineSize is the upper bound of a single log line the scanner accepts.
+// bufio.Scanner's default (64KB) is too small for a log line carrying a deep stack trace,
+// and hitting it aborts the scan of the whole file.
+const maxLogLineSize = 16 * 1024 * 1024
+
+// nolint:funlen
+func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (*errorReport, error) {
+	scanner := bufio.NewScanner(fp)
+	scanner.Buffer(make([]byte, 0, bufio.MaxScanTokenSize), maxLogLineSize)
+	var key string
+	var groups []*ErrorGroup
+	report := &errorReport{}
+
 	ln := 0
 	for scanner.Scan() {
 		ln++
 		var errorLog *ErrorLog
 		var group *ErrorGroup
 		flg := false
-		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil {
-			return 0, "", err
+		// A line that is not valid JSON is skipped rather than aborting the whole report.
+		// The log file is commonly shared with other processes (or a previous run of this
+		// one), and a line torn by interleaved writes is not evidence about *this* process.
+		if err := json.Unmarshal(scanner.Bytes(), &errorLog); err != nil || errorLog == nil {
+			report.skipped++
+			continue
 		}
 		if errorLog.Stacktrace == "" || errorLog.Pid != pidValue {
 			continue
@@ -185,28 +202,31 @@ func (l *prettyLogger) scanStackTraces(fp *os.File, pidValue int) (int, string, 
 			group.ErrorLogs = append(group.ErrorLogs, errorLog)
 			groups = append(groups, group)
 		}
-		count++
 	}
 
 	for i, v := range groups {
-		traces += l.fmtStackTrace(i, len(v.ErrorLogs), v.ErrorLogs[len(v.ErrorLogs)-1])
+		report.traces += l.fmtStackTrace(i, len(v.ErrorLogs), v.ErrorLogs[len(v.ErrorLogs)-1])
 	}
 
 	if err := scanner.Err(); err != nil {
-		return 0, "", err
+		return nil, err
 	}
-	return len(groups), traces, nil
+	report.count = len(groups)
+	return report, nil
 }
 
-func (l *prettyLogger) printTraces(count int, traces string, pidValue int) error {
+func (l *prettyLogger) printTraces(report *errorReport, pidValue int) error {
 	var head string
-	if count == 0 {
+	if report.count == 0 {
 		return nil
 	}
 	head += au.Red("ERROR REPORT\n").Bold().String()
-	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), count)
+	head += fmt.Sprintf("%v: %v\n", l.attr("ErrorCount"), report.count)
 	head += fmt.Sprintf("%v: %v\n", l.attr("PID"), pidValue)
-	output := fmt.Sprintf("\n\n%s\n\n%s", head, traces)
+	if report.skipped > 0 {
+		head += fmt.Sprintf("%v: %v\n", l.attr("SkippedLines"), report.skipped)
+	}
+	output := fmt.Sprintf("\n\n%s\n\n%s", head, report.traces)
 	if _, err := fmt.Fprint(l.Logger.Writer(), output); err != nil {
 		return err
 	}
