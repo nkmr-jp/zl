@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"github.com/samber/lo"
@@ -41,6 +42,7 @@ var (
 	separator      = " "
 	pid            int
 	isTest         bool
+	errorCount     atomic.Int64 // ERROR or higher entries written by this process
 )
 
 type fatalHook struct{}
@@ -124,7 +126,18 @@ func newLogger(enc *zapcore.EncoderConfig) *zap.Logger {
 		zap.AddCallerSkip(1),
 		zap.AddCaller(),
 		zap.AddStacktrace(zapcore.ErrorLevel),
+		zap.Hooks(countErrors),
 	).With(getAdditionalFields()...)
+}
+
+// countErrors remembers that this process wrote an entry with a stack trace
+// (AddStacktrace is set at ErrorLevel), so Sync can tell whether an error report
+// could contain anything without reading the log file.
+func countErrors(entry zapcore.Entry) error {
+	if entry.Level >= zapcore.ErrorLevel {
+		errorCount.Add(1)
+	}
+	return nil
 }
 
 func setOmitKeys(enc *zapcore.EncoderConfig) {
@@ -182,6 +195,9 @@ func GetVersion() string {
 //
 // Also displays an error report with a formatted stack trace if the outputType is PrettyOutput.
 // This is useful for finding the source of errors during development.
+// The report is built by reading the log file back, so it is skipped when this process
+// has not written any ERROR (or higher) entry: there is nothing to report, and the file
+// may be shared with other processes whose lines are none of this process's business.
 //
 // An error will occur if zap's Sync is executed when the output destination is console.
 // (See: https://github.com/uber-go/zap/issues/880 )
@@ -193,7 +209,7 @@ func Sync() {
 	if err := zapLogger.Sync(); err != nil {
 		log.Println(err)
 	}
-	if outputType == PrettyOutput {
+	if outputType == PrettyOutput && errorCount.Load() > 0 {
 		pretty.showErrorReport(fileName, pid)
 	}
 }
@@ -282,12 +298,8 @@ func ResetGlobalLoggerSettings() {
 	fieldKeys = make(map[Key]string)
 	isStdOut = false
 	separator = " "
-	fileName = ""
-	maxSize = 0
-	maxBackups = 0
-	maxAge = 0
-	localTime = false
-	compress = false
+	errorCount.Store(0)
+	resetRotateSettings()
 }
 
 // Cleanup resets global logger settings.
