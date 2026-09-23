@@ -119,7 +119,7 @@ func fieldKey(key Key) string {
 func newLogger(enc *zapcore.EncoderConfig) *zap.Logger {
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(*enc),
-		zapcore.NewMultiWriteSyncer(getSyncers()...),
+		getWriteSyncer(),
 		severityLevel,
 	)
 	return zap.New(core,
@@ -261,6 +261,18 @@ func getCallerEncoder() zapcore.CallerEncoder {
 	return zapcore.ShortCallerEncoder
 }
 
+// writeSyncer is the output shared by every logger in this process, including those made by New.
+// Each lumberjack.Logger rotates on its own, so giving each logger its own one
+// would leave the others writing to the renamed backup after one of them rotates.
+var writeSyncer zapcore.WriteSyncer
+
+func getWriteSyncer() zapcore.WriteSyncer {
+	if writeSyncer == nil {
+		writeSyncer = zapcore.NewMultiWriteSyncer(getSyncers()...)
+	}
+	return writeSyncer
+}
+
 func getSyncers() (syncers []zapcore.WriteSyncer) {
 	switch outputType {
 	case PrettyOutput, FileOutput:
@@ -299,6 +311,7 @@ func ResetGlobalLoggerSettings() {
 	isStdOut = false
 	separator = " "
 	errorCount.Store(0)
+	writeSyncer = nil
 	resetRotateSettings()
 }
 
